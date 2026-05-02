@@ -1,18 +1,16 @@
 services:
   frontend:
-    build:
-      context: ./frontend
-      args:
-        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-    container_name: zapmonei-frontend
-    restart: always
+    # No Swarm, a imagem deve ser pré-construída
+    image: alexignacio/zapmonei-frontend:latest
+    networks:
+      - automacoes
     environment:
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-    networks:
-      - automacoes
     deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.zapmonei.rule=Host(`zapmonei.com.br`)"
