@@ -1,0 +1,392 @@
+PRD — Sistema de Gestão de Finanças para Motoristas de Aplicativo
+1. Visão do Produto
+Criar uma plataforma de gestão financeira pessoal e profissional para motoristas de aplicativo, com foco em simplicidade, automação e uso via WhatsApp, permitindo que o usuário registre ganhos, gastos, abastecimentos, despesas do veículo e categorias financeiras de forma rápida e intuitiva.
+O produto deve ajudar o motorista a responder perguntas como:
+●	Quanto eu ganhei hoje?
+●	Quanto gastei trabalhando?
+●	Qual foi meu lucro real?
+●	Quanto estou gastando com combustível?
+●	Quanto separo entre vida pessoal e trabalho?
+●	Vale a pena continuar nessa rotina?
+2. Problema que o produto resolve
+Hoje, muitos motoristas de aplicativo:
+●	misturam despesas pessoais com despesas do trabalho;
+●	anotam gastos em papel, caderno, planilha ou app genérico;
+●	esquecem de lançar despesas;
+●	não sabem o lucro real do dia, da semana ou do mês;
+●	têm dificuldade para registrar informações enquanto estão dirigindo;
+●	não querem aprender uma ferramenta complexa;
+●	usam o WhatsApp o tempo todo, mas não usam sistemas financeiros tradicionais.
+3. Público-alvo
+Primário
+Motoristas de aplicativo, incluindo:
+●	Uber
+●	99
+●	inDrive
+●	motoristas de entrega que usam carro ou moto
+●	motoristas autônomos com rotina semelhante
+Secundário
+●	motoristas parceiros com equipe ou família ajudando na gestão
+●	casais que controlam finanças do carro em conjunto
+●	pequenos profissionais autônomos que usam o carro como ferramenta de trabalho
+4. Proposta de valor
+O sistema deve oferecer:
+●	registro simples via WhatsApp
+●	separação entre finanças pessoais e profissionais
+●	leitura automática de notas e comprovantes
+●	painel de resumo financeiro
+●	relatórios por período
+●	assistente conversacional
+●	experiência leve e lúdica
+●	controle financeiro sem burocracia
+5. Objetivos do produto
+Objetivos de negócio
+●	Aumentar a adesão de motoristas ao sistema
+●	Criar retenção mensal com alto uso recorrente
+●	Tornar o produto indispensável para a rotina do motorista
+●	Gerar valor suficiente para sustentar modelo de assinatura ou freemium
+Objetivos do usuário
+●	Saber exatamente quanto ganhou e gastou
+●	Separar trabalho e vida pessoal
+●	Registrar despesas em poucos segundos
+●	Entender o lucro líquido da operação
+●	Não depender de planilhas
+●	Ter controle sem esforço
+________________________________________
+6. Hipótese principal
+Se o sistema permitir que o motorista registre ganhos e gastos via WhatsApp de forma natural, rápida e com automação inteligente, ele conseguirá manter controle financeiro com mais frequência do que em apps financeiros tradicionais.
+________________________________________
+7. Conceito do produto
+Como funcionaria
+O motorista se cadastra no sistema e conecta o WhatsApp.
+ Depois disso, ele pode mandar mensagens como:
+●	“Ganhei R$ 120 hoje no Uber”
+●	“Abastecimento de R$ 210 para trabalho”
+●	“Comprei pão e café, gasto pessoal R$ 18”
+●	“Vou mandar a nota do posto”
+●	“Recebi Pix de R$ 45”
+●	“Classifica isso como despesa do carro”
+●	“Quanto eu lucrei essa semana?”
+O sistema interpreta a mensagem, classifica a transação e atualiza o painel em tempo real.
+Tipos de entrada aceitos
+●	texto
+●	áudio
+●	imagem/foto de nota fiscal
+●	comprovante de pagamento
+●	mensagem com localização, data ou valor parcial
+●	comando simples por linguagem natural
+________________________________________
+8. Funcionalidades principais
+8.1. Cadastro e onboarding
+O usuário deve conseguir:
+●	criar conta com número de telefone
+●	conectar WhatsApp
+●	informar perfil básico:
+○	nome
+○	cidade
+○	tipo de veículo
+○	trabalha com app de corrida, entrega ou ambos
+○	forma de recebimento
+●	definir se quer usar finanças:
+○	pessoal
+○	trabalho
+○	ambas
+8.2. Registro financeiro via WhatsApp
+O sistema deve permitir criar lançamentos como:
+Entradas
+●	corrida Uber
+●	Pix recebido
+●	dinheiro em espécie
+●	bônus de plataforma
+●	gorjetas
+●	outros ganhos
+Saídas
+●	combustível
+●	alimentação
+●	manutenção
+●	lavagem
+●	pedágio
+●	estacionamento
+●	depreciação
+●	seguro
+●	celular/internet
+●	despesas pessoais
+Regras
+●	o usuário pode confirmar ou corrigir a categoria sugerida
+●	o sistema aprende padrões de classificação
+●	o sistema deve perguntar o mínimo possível
+8.3. Registro por foto de nota fiscal
+Quando o usuário enviar foto da nota:
+●	o sistema lê valor, data e estabelecimento
+●	sugere categoria
+●	pergunta se foi:
+○	trabalho
+○	pessoal
+●	salva o lançamento automaticamente após confirmação
+8.4. Resumo financeiro diário, semanal e mensal
+Mostrar:
+●	total de ganhos
+●	total de despesas
+●	lucro líquido
+●	despesas por categoria
+●	média diária
+●	saldo do mês
+●	% de custos sobre receita
+8.5. Separação entre vida pessoal e profissional
+O sistema deve permitir classificar cada item como:
+●	pessoal
+●	profissional
+●	misto, quando necessário
+8.6. Metas e alertas
+Exemplos:
+●	aviso de gasto alto com combustível
+●	alerta de baixo lucro no dia
+●	meta de economia semanal
+●	alerta de despesas pessoais misturadas com trabalho
+●	lembretes de lançamento
+8.7. Painel web
+Além do WhatsApp, o usuário deve ter um painel visual com:
+●	visão geral
+●	histórico de transações
+●	filtros
+●	gráficos
+●	exportação de relatórios
+●	edição de categorias
+●	metas
+8.8. Relatórios e exportação
+●	PDF
+●	CSV
+●	resumo por período
+●	comparativo entre semanas
+●	relatório de lucro real do motorista
+8.9. IA para classificação automática
+A IA pode:
+●	identificar se uma mensagem é ganho ou gasto
+●	detectar categoria provável
+●	identificar contexto de trabalho ou pessoal
+●	aprender com correções do usuário
+8.10. Gamificação
+Para aumentar engajamento:
+●	metas diárias
+●	streak de lançamentos
+●	medalhas
+●	ranking pessoal
+●	indicadores de disciplina financeira
+________________________________________
+9. Fluxos principais do usuário
+Fluxo 1 — Primeiro acesso
+1.	Usuário entra no sistema
+2.	Informa número de telefone
+3.	Recebe instrução para iniciar no WhatsApp
+4.	Define perfil básico
+5.	Recebe mensagem de boas-vindas
+6.	Faz primeiro lançamento
+7.	Vê painel inicial com saldo e resumo
+Fluxo 2 — Registrar ganho
+1.	Usuário envia: “Ganhei 85 reais na corrida”
+2.	Sistema identifica valor e tipo
+3.	Classifica como ganho profissional
+4.	Confirma com o usuário
+5.	Salva a transação
+6.	Atualiza dashboard
+Fluxo 3 — Registrar gasto por foto
+1.	Usuário envia foto da nota
+2.	Sistema faz OCR
+3.	Extrai valor e local
+4.	Sugere categoria
+5.	Usuário confirma “abastecimento para trabalho”
+6.	Sistema salva como despesa profissional
+Fluxo 4 — Consultar resumo
+1.	Usuário pergunta: “Quanto eu lucrei essa semana?”
+2.	Sistema calcula ganhos menos despesas
+3.	Responde em linguagem simples
+4.	Mostra resumo e atalhos
+________________________________________
+10. Requisitos funcionais
+Cadastro
+●	autenticação por telefone
+●	criação de perfil
+●	configuração inicial
+Lançamentos
+●	criar entrada
+●	criar saída
+●	editar lançamento
+●	excluir lançamento
+●	categorizar automaticamente
+●	marcar como pessoal ou trabalho
+Comunicação
+●	integração com WhatsApp
+●	resposta automática
+●	confirmação de ações
+IA
+●	interpretar texto livre
+●	interpretar áudio
+●	classificar imagens de nota
+●	entender contexto
+Relatórios
+●	dashboard web
+●	exportação
+●	comparativos
+●	filtros por data, categoria e tipo
+Configurações
+●	categorias personalizadas
+●	alertas
+●	metas
+●	preferências de notificações
+________________________________________
+11. Requisitos não funcionais
+Usabilidade
+●	interface extremamente simples
+●	linguagem acessível
+●	poucos cliques
+●	alta velocidade de resposta
+Performance
+●	resposta rápida no WhatsApp
+●	processamento de imagem em tempo aceitável
+●	dashboard leve em celular
+Segurança
+●	proteção de dados pessoais e financeiros
+●	autenticação segura
+●	criptografia em trânsito e idealmente em repouso
+●	controle de acesso administrativo
+Confiabilidade
+●	não perder registros
+●	ter fila de processamento para mensagens
+●	garantir reprocessamento de falhas
+Escalabilidade
+●	suportar múltiplos usuários simultâneos
+●	suportar alto volume de mensagens por WhatsApp
+________________________________________
+12. MVP sugerido
+Versão 1 do produto
+Eu recomendo começar com um MVP enxuto:
+Deve ter
+●	cadastro com telefone
+●	WhatsApp funcionando
+●	registro de ganho por texto
+●	registro de gasto por texto
+●	registro de foto de nota
+●	painel básico com:
+○	ganhos
+○	gastos
+○	lucro
+○	categorias
+●	resumo diário e semanal
+Não precisa ter no começo
+●	gamificação avançada
+●	múltiplas contas
+●	automações complexas
+●	integração com bancos
+●	recursos contábeis completos
+●	inteligência muito sofisticada no início
+________________________________________
+13. Diferenciais competitivos
+Seu produto pode se destacar por:
+●	foco exclusivo em motorista de app
+●	linguagem adaptada à rotina deles
+●	registro via WhatsApp
+●	separação entre pessoal e trabalho
+●	interface lúdica e simples
+●	uso de IA para reduzir esforço
+●	leitura de nota fiscal e comprovante
+●	relatórios que mostram o “lucro real”
+________________________________________
+14. Métricas de sucesso
+Métricas de produto
+●	taxa de ativação
+●	número de lançamentos por usuário por semana
+●	retenção em 7, 30 e 90 dias
+●	taxa de uso via WhatsApp
+●	taxa de envio de fotos/notas
+●	taxa de confirmação de sugestões automáticas
+Métricas de negócio
+●	conversão para plano pago
+●	churn mensal
+●	CAC
+●	LTV
+●	recorrência de uso
+Métricas de valor para o usuário
+●	número de despesas classificadas corretamente
+●	redução de gastos sem controle
+●	frequência de consulta ao saldo/lucro
+●	percepção de organização financeira
+________________________________________
+15. Casos de uso importantes
+Caso de uso 1
+O motorista está dirigindo e manda áudio:
+ “Anota aí, abastecimento de 200 reais pra trabalhar hoje”
+Caso de uso 2
+Ele recebe uma corrida e fala:
+ “Ganhei 38 reais na corrida pro aeroporto”
+Caso de uso 3
+Ele manda a foto de uma nota de restaurante e diz:
+ “Almoço de hoje, pessoal”
+Caso de uso 4
+Ele pergunta:
+ “Quanto sobrou depois dos gastos dessa semana?”
+Caso de uso 5
+Ele quer saber:
+ “Quanto gastei só com combustível no mês?”
+________________________________________
+16. Regras de classificação financeira
+Categorias possíveis
+●	ganho profissional
+●	ganho pessoal
+●	combustível
+●	manutenção
+●	alimentação
+●	pedágio
+●	estacionamento
+●	lavagem
+●	internet/celular
+●	despesa pessoal
+●	investimento no veículo
+●	outros
+Regras sugeridas
+●	se contiver termos como “corrida”, “Uber”, “99”, “entrega”, classificar como profissional
+●	se contiver termos como “mercado”, “farmácia”, “pão”, classificar como pessoal
+●	se contiver “posto”, “abastecimento”, “gasolina”, “etanol”, sugerir combustível
+●	se contiver “oficina”, “troca de óleo”, “pneu”, sugerir manutenção
+________________________________________
+17. Tom de voz do produto
+O sistema deve falar como um assistente:
+●	simples
+●	amigável
+●	prático
+●	sem linguagem técnica
+●	sem tom de robô frio
+●	sem excesso de texto
+Exemplo:
+“Anotei seu gasto de R$ 210 como abastecimento para trabalho. Quer ver seu resumo do dia?”
+________________________________________
+18. Riscos e desafios
+Risco 1 — Baixa adesão por complexidade
+Mitigação
+●	onboarding simples
+●	poucos passos
+●	registro por WhatsApp
+Risco 2 — Classificação incorreta da IA
+Mitigação
+●	confirmação do usuário
+●	opção de corrigir categoria
+●	aprendizado contínuo
+Risco 3 — Usuário esquece de lançar
+Mitigação
+●	lembretes
+●	resumo automático
+●	mensagens de engajamento
+Risco 4 — Dados financeiros sensíveis
+Mitigação
+●	boa segurança
+●	transparência sobre uso de dados
+●	políticas claras
+________________________________________
+19. Roadmap sugerido
+Fase 1 — MVP
+●	cadastro
+●	WhatsApp
+●	lançamentos básicos
+●	OCR de nota
+●	painel simples
+Fase 2 — Inteligência e automação
+●	classificação av

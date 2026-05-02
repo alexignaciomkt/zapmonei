@@ -1,0 +1,76 @@
+{
+  "name": "ZapMonei: Lembrete Ativo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hours": 24
+            }
+          ]
+        }
+      },
+      "id": "c5306e90-f966-4e4f-889a-0e6d39d6e492",
+      "name": "Cron: A cada 24 horas",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "onboarding_status",
+              "condition": "eq",
+              "keyValue": "completed"
+            }
+          ]
+        }
+      },
+      "id": "a90b6a22-446a-4d2c-8822-774f3466183a",
+      "name": "Supabase: Buscar Motoristas Ativos",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://apigo.euattendo.com.br/message/sendText/{{ $json.whatsapp_instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "0326ad2f6fcc4cb57e1e132812b1e1e1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Oi {{ $json.nome }}! Faz tempo que não nos falamos. Como foram as corridas nas últimas horas? 🚗"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e96c3422-b223-4455-8866-998877665544",
+      "n

@@ -1,0 +1,471 @@
+{
+  "name": "ZapMonei_Onboarding_Kathy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kathy-onboarding",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-kathy",
+      "name": "Webhook Kathy",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-500, 200]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "whatsapp_number",
+              "keyValue": "={{ $json.body.data.key.remoteJid.split('@')[0] }}"
+            }
+          ]
+        }
+      },
+      "id": "supabase-get-user",
+      "name": "Supabase: Buscar Usuário",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [-280, 200],
+      "credentials": { "supabaseApi": { "id": "HXQA4QwiDjplFNrq", "name": "Supabase ZapMonei" } }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.data.message.conversation }}",
+        "rules": {
+          "rules": [
+            { "value2": "1", "output": 1 },
+            { "value2": "2", "output": 2 }
+          ]
+        }
+      },
+      "id": "switch-opcoes",
+      "name": "Opção 1 ou 2?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [-60, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            { "value1": "={{ $node[\"Supabase: Buscar Usuário\"].json[\"tutorial_visto\"] }}", "value2": true }
+          ]
+        }
+      },
+      "id": "if-tutorial-visto-code",
+      "name": "Tutorial Visto? (Código)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [160, 40]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            { "value1": "={{ $node[\"Supabase: Buscar Usuário\"].json[\"tutorial_visto\"] }}", "value2": true }
+          ]
+        }
+      },
+      "id": "if-tutorial-visto-qr",
+      "name": "Tutorial Visto? (QR)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [160, 360]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/media",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"url\": \"https://s3.a2tickets360.com.br/zapmoneiimagens/Etapa%201%20-%20QRcode.png\",\n  \"type\": \"image\",\n  \"caption\": \"1️⃣ Primeiro, clique nos três pontinhos (ou configurações) no canto superior direito do seu WhatsApp.\"\n}"
+      },
+      "id": "tutorial-step-1",
+      "name": "Tutorial 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, 200]
+    },
+    {
+      "parameters": { "amount": 1, "unit": "seconds" },
+      "id": "wait-1",
+      "name": "Wait 1s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [580, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/media",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"url\": \"https://s3.a2tickets360.com.br/zapmoneiimagens/Etapa%202%20-%20QRCode.png\",\n  \"type\": \"image\",\n  \"caption\": \"2️⃣ Agora, toque na opção 'Aparelhos conectados'.\"\n}"
+      },
+      "id": "tutorial-step-2",
+      "name": "Tutorial 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [760, 200]
+    },
+    {
+      "parameters": { "amount": 1, "unit": "seconds" },
+      "id": "wait-2",
+      "name": "Wait 1s B",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [940, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/media",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"url\": \"https://s3.a2tickets360.com.br/zapmoneiimagens/Etapa%203%20-%20QRCode.png\",\n  \"type\": \"image\",\n  \"caption\": \"3️⃣ Clique no botão verde 'Conectar um aparelho'.\"\n}"
+      },
+      "id": "tutorial-step-3",
+      "name": "Tutorial 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": { "amount": 1, "unit": "seconds" },
+      "id": "wait-3",
+      "name": "Wait 1s C",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1300, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/media",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"url\": \"https://s3.a2tickets360.com.br/zapmoneiimagens/Ler%20QRCode.png\",\n  \"type\": \"image\",\n  \"caption\": \"4️⃣ Agora aponte a câmera para o QR Code que vou te enviar em seguida!\"\n}"
+      },
+      "id": "tutorial-qr-final",
+      "name": "Tutorial QR: Final",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1500, 360]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/media",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"url\": \"https://s3.a2tickets360.com.br/zapmoneiimagens/Etapa%204%20-%20Conectar%20Codigo.png\",\n  \"type\": \"image\",\n  \"caption\": \"4️⃣ Embaixo, procure e clique na opção 'Conectar com número de telefone'.\"\n}"
+      },
+      "id": "tutorial-code-4",
+      "name": "Tutorial Code: Passo 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1500, 40]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/media",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"url\": \"https://s3.a2tickets360.com.br/zapmoneiimagens/Inserir%20o%20c%C3%B3digo.png\",\n  \"type\": \"image\",\n  \"caption\": \"5️⃣ Por fim, digite o código de 8 dígitos que vou te mandar agora!\"\n}"
+      },
+      "id": "tutorial-code-final",
+      "name": "Tutorial Code: Final",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1720, 40]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "updateKey": "whatsapp_number",
+        "dataToUpdate": {
+          "columns": [
+            { "columnName": "tutorial_visto", "columnValue": "true" }
+          ]
+        },
+        "filters": {
+          "conditions": [
+            { "keyName": "whatsapp_number", "keyValue": "={{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}" }
+          ]
+        }
+      },
+      "id": "supabase-mark-visto",
+      "name": "Supabase: Marcar Visto",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1950, 200],
+      "credentials": { "supabaseApi": { "id": "HXQA4QwiDjplFNrq", "name": "Supabase ZapMonei" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/instance/qr",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_instance_token\"] }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"phone\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"subscribe\": [\"MESSAGE\"]\n}"
+      },
+      "id": "evo-go-qr",
+      "name": "Evo-Go: Gerar QR Code",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2200, 360]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/media",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"url\": \"{{ $json.data.Qrcode.split(',')[1] }}\",\n  \"type\": \"image\",\n  \"caption\": \"📸 **ESSE É O SEU QR CODE!**\\n\\nEscaneie agora. Ele expira rápido! Se não der tempo, digite 2 de novo.\"\n}"
+      },
+      "id": "kathy-send-qr",
+      "name": "Kathy: Enviar QR Code Real",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2420, 360]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/instance/pair",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_instance_token\"] }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"phone\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"subscribe\": [\"MESSAGE\"]\n}"
+      },
+      "id": "evo-go-pair",
+      "name": "Evo-Go: Gerar Pairing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2200, 40]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"text\": \"🔑 **SEU CÓDIGO É:**\\n\\n*{{ $json.data.PairingCode }}*\\n\\nDigite-o no seu WhatsApp agora!\"\n}"
+      },
+      "id": "kathy-send-code",
+      "name": "Kathy: Enviar Código Real",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2420, 40]
+    },
+    {
+      "parameters": {
+        "values": { "number": [{ "name": "tentativas", "value": "={{ $json.tentativas ? $json.tentativas + 1 : 1 }}" }] }
+      },
+      "id": "loop-contador",
+      "name": "Loop Contador",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [2700, 200]
+    },
+    {
+      "parameters": { "amount": 10, "unit": "seconds" },
+      "id": "loop-wait",
+      "name": "Wait 10s Loop",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2900, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://apigo.euattendo.com.br/instance/status",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_instance_token\"] }}" }] }
+      },
+      "id": "check-status",
+      "name": "Check Connection Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3100, 200]
+    },
+    {
+      "parameters": {
+        "conditions": { "boolean": [{ "value1": "={{ $json.data.connected }}", "value2": true }] }
+      },
+      "id": "if-connected",
+      "name": "Conectou?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [3300, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"text\": \"✅ **CONECTADO!** 🎉\\n\\nParabéns! Agora seu ZapMonei está ativo. Comece mandando: 'Paguei 50 no posto'\"\n}"
+      },
+      "id": "kathy-success",
+      "name": "Kathy: Sucesso!",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3550, 150]
+    },
+    {
+      "parameters": {
+        "conditions": { "number": [{ "value1": "={{ $node[\"Loop Contador\"].json[\"tentativas\"] }}", "operator": "smaller", "value2": 30 }] }
+      },
+      "id": "if-still-time",
+      "name": "Ainda no tempo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [3550, 350]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"text\": \"⏳ **Tempo Expirado!**\\n\\nNão consegui detectar a conexão a tempo. Vamos tentar de novo?\\n\\nDigite **1** para novo Código\\nDigite **2** para novo QR Code\"\n}"
+      },
+      "id": "kathy-timeout",
+      "name": "Kathy: Timeout",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3800, 350]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"text\": \"🔄 **Entendido! Gerando novo código para você...**\\n\\nAponte a câmera agora:\"\n}"
+      },
+      "id": "kathy-short-qr",
+      "name": "Kathy: Curto QR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, 460]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "73d46179-2a3c-44b8-834c-146ef526474e" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Supabase: Buscar Usuário\"].json[\"whatsapp_number\"] }}\",\n  \"text\": \"🔄 **Certo! Gerando novo código de pareamento...**\\n\\nDigite-o quando ele chegar:\"\n}"
+      },
+      "id": "kathy-short-code",
+      "name": "Kathy: Curto Código",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, -50]
+    }
+  ],
+  "connections": {
+    "Webhook Kathy": { "main": [[{ "node": "Supabase: Buscar Usuário", "type": "main", "index": 0 }]] },
+    "Supabase: Buscar Usuário": { "main": [[{ "node": "Opção 1 ou 2?", "type": "main", "index": 0 }]] },
+    "Opção 1 ou 2?": {
+      "main": [
+        [],
+        [{ "node": "Tutorial Visto? (Código)", "type": "main", "index": 0 }],
+        [{ "node": "Tutorial Visto? (QR)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tutorial Visto? (Código)": {
+      "main": [
+        [{ "node": "Kathy: Curto Código", "type": "main", "index": 0 }],
+        [{ "node": "Tutorial 1", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tutorial Visto? (QR)": {
+      "main": [
+        [{ "node": "Kathy: Curto QR", "type": "main", "index": 0 }],
+        [{ "node": "Tutorial 1", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tutorial 1": { "main": [[{ "node": "Wait 1s", "type": "main", "index": 0 }]] },
+    "Wait 1s": { "main": [[{ "node": "Tutorial 2", "type": "main", "index": 0 }]] },
+    "Tutorial 2": { "main": [[{ "node": "Wait 1s B", "type": "main", "index": 0 }]] },
+    "Wait 1s B": { "main": [[{ "node": "Tutorial 3", "type": "main", "index": 0 }]] },
+    "Tutorial 3": { "main": [[{ "node": "Wait 1s C", "type": "main", "index": 0 }]] },
+    "Wait 1s C": {
+      "main": [
+        [{ "node": "Tutorial Code: Passo 4", "type": "main", "index": 0 }],
+        [{ "node": "Tutorial QR: Final", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tutorial QR: Final": { "main": [[{ "node": "Supabase: Marcar Visto", "type": "main", "index": 0 }]] },
+    "Tutorial Code: Passo 4": { "main": [[{ "node": "Tutorial Code: Final", "type": "main", "index": 0 }]] },
+    "Tutorial Code: Final": { "main": [[{ "node": "Supabase: Marcar Visto", "type": "main", "index": 0 }]] },
+    "Supabase: Marcar Visto": {
+      "main": [
+        [
+          { "node": "Evo-Go: Gerar Pairing", "type": "main", "index": 0 },
+          { "node": "Evo-Go: Gerar QR Code", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Kathy: Curto QR": { "main": [[{ "node": "Evo-Go: Gerar QR Code", "type": "main", "index": 0 }]] },
+    "Kathy: Curto Código": { "main": [[{ "node": "Evo-Go: Gerar Pairing", "type": "main", "index": 0 }]] },
+    "Evo-Go: Gerar QR Code": { "main": [[{ "node": "Kathy: Enviar QR Code Real", "type": "main", "index": 0 }]] },
+    "Evo-Go: Gerar Pairing": { "main": [[{ "node": "Kathy: Enviar Código Real", "type": "main", "index": 0 }]] },
+    "Kathy: Enviar QR Code Real": { "main": [[{ "node": "Loop Contador", "type": "main", "index": 0 }]] },
+    "Kathy: Enviar Código Real": { "main": [[{ "node": "Loop Contador", "type": "main", "index": 0 }]] },
+    "Loop Contador": { "main": [[{ "node": "Wait 10s Loop", "type": "main", "index": 0 }]] },
+    "Wait 10s Loop": { "main": [[{ "node": "Check Connection Status", "type": "main", "index": 0 }]] },
+    "Check Connection Status": { "main": [[{ "node": "Conectou?", "type": "main", "index": 0 }]] },
+    "Conectou?": {
+      "main": [
+        [{ "node": "Kathy: Sucesso!", "type": "main", "index": 0 }],
+        [{ "node": "Ainda no tempo?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ainda no tempo?": {
+      "main": [
+        [{ "node": "Loop Contador", "type": "main", "index": 0 }],
+        [{ "node": "Kathy: Timeout", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}

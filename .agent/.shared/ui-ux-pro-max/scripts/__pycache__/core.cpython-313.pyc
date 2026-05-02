@@ -1,0 +1,349 @@
+f.c.length, f.o, f.m), o += 16 + badd + (f.m ? f.m.length : 0);
+    }
+    wzf(out, o, files.length, cdl, oe);
+    return out;
+}
+exports.zipSync = zipSync;
+/**
+ * Streaming pass-through decompression for ZIP archives
+ */
+var UnzipPassThrough = /*#__PURE__*/ (function () {
+    function UnzipPassThrough() {
+    }
+    UnzipPassThrough.prototype.push = function (data, final) {
+        this.ondata(null, data, final);
+    };
+    UnzipPassThrough.compression = 0;
+    return UnzipPassThrough;
+}());
+exports.UnzipPassThrough = UnzipPassThrough;
+/**
+ * Streaming DEFLATE decompression for ZIP archives. Prefer AsyncZipInflate for
+ * better performance.
+ */
+var UnzipInflate = /*#__PURE__*/ (function () {
+    /**
+     * Creates a DEFLATE decompression that can be used in ZIP archives
+     */
+    function UnzipInflate() {
+        var _this = this;
+        this.i = new Inflate(function (dat, final) {
+            _this.ondata(null, dat, final);
+        });
+    }
+    UnzipInflate.prototype.push = function (data, final) {
+        try {
+            this.i.push(data, final);
+        }
+        catch (e) {
+            this.ondata(e, null, final);
+        }
+    };
+    UnzipInflate.compression = 8;
+    return UnzipInflate;
+}());
+exports.UnzipInflate = UnzipInflate;
+/**
+ * Asynchronous streaming DEFLATE decompression for ZIP archives
+ */
+var AsyncUnzipInflate = /*#__PURE__*/ (function () {
+    /**
+     * Creates a DEFLATE decompression that can be used in ZIP archives
+     */
+    function AsyncUnzipInflate(_, sz) {
+        var _this = this;
+        if (sz < 320000) {
+            this.i = new Inflate(function (dat, final) {
+                _this.ondata(null, dat, final);
+            });
+        }
+        else {
+            this.i = new AsyncInflate(function (err, dat, final) {
+                _this.ondata(err, dat, final);
+            });
+            this.terminate = this.i.terminate;
+        }
+    }
+    AsyncUnzipInflate.prototype.push = function (data, final) {
+        if (this.i.terminate)
+            data = slc(data, 0);
+        this.i.push(data, final);
+    };
+    AsyncUnzipInflate.compression = 8;
+    return AsyncUnzipInflate;
+}());
+exports.AsyncUnzipInflate = AsyncUnzipInflate;
+/**
+ * A ZIP archive decompression stream that emits files as they are discovered
+ */
+var Unzip = /*#__PURE__*/ (function () {
+    /**
+     * Creates a ZIP decompression stream
+     * @param cb The callback to call whenever a file in the ZIP archive is found
+     */
+    function Unzip(cb) {
+        this.onfile = cb;
+        this.k = [];
+        this.o = {
+            0: UnzipPassThrough
+        };
+        this.p = et;
+    }
+    /**
+     * Pushes a chunk to be unzipped
+     * @param chunk The chunk to push
+     * @param final Whether this is the last chunk
+     */
+    Unzip.prototype.push = function (chunk, final) {
+        var _this = this;
+        if (!this.onfile)
+            err(5);
+        if (!this.p)
+            err(4);
+        if (this.c > 0) {
+            var len = Math.min(this.c, chunk.length);
+            var toAdd = chunk.subarray(0, len);
+            this.c -= len;
+            if (this.d)
+                this.d.push(toAdd, !this.c);
+            else
+                this.k[0].push(toAdd);
+            chunk = chunk.subarray(len);
+            if (chunk.length)
+                return this.push(chunk, final);
+        }
+        else {
+            var f = 0, i = 0, is = void 0, buf = void 0;
+            if (!this.p.length)
+                buf = chunk;
+            else if (!chunk.length)
+                buf = this.p;
+            else {
+                buf = new u8(this.p.length + chunk.length);
+                buf.set(this.p), buf.set(chunk, this.p.length);
+            }
+            var l = buf.length, oc = this.c, add = oc && this.d;
+            var _loop_2 = function () {
+                var _a;
+                var sig = b4(buf, i);
+                if (sig == 0x4034B50) {
+                    f = 1, is = i;
+                    this_1.d = null;
+                    this_1.c = 0;
+                    var bf = b2(buf, i + 6), cmp_1 = b2(buf, i + 8), u = bf & 2048, dd = bf & 8, fnl = b2(buf, i + 26), es = b2(buf, i + 28);
+                    if (l > i + 30 + fnl + es) {
+                        var chks_3 = [];
+                        this_1.k.unshift(chks_3);
+                        f = 2;
+                        var sc_1 = b4(buf, i + 18), su_1 = b4(buf, i + 22);
+                        var fn_1 = strFromU8(buf.subarray(i + 30, i += 30 + fnl), !u);
+                        if (sc_1 == 4294967295) {
+                            _a = dd ? [-2] : z64e(buf, i), sc_1 = _a[0], su_1 = _a[1];
+                        }
+                        else if (dd)
+                            sc_1 = -1;
+                        i += es;
+                        this_1.c = sc_1;
+                        var d_1;
+                        var file_1 = {
+                            name: fn_1,
+                            compression: cmp_1,
+                            start: function () {
+                                if (!file_1.ondata)
+                                    err(5);
+                                if (!sc_1)
+                                    file_1.ondata(null, et, true);
+                                else {
+                                    var ctr = _this.o[cmp_1];
+                                    if (!ctr)
+                                        file_1.ondata(err(14, 'unknown compression type ' + cmp_1, 1), null, false);
+                                    d_1 = sc_1 < 0 ? new ctr(fn_1) : new ctr(fn_1, sc_1, su_1);
+                                    d_1.ondata = function (err, dat, final) { file_1.ondata(err, dat, final); };
+                                    for (var _i = 0, chks_4 = chks_3; _i < chks_4.length; _i++) {
+                                        var dat = chks_4[_i];
+                                        d_1.push(dat, false);
+                                    }
+                                    if (_this.k[0] == chks_3 && _this.c)
+                                        _this.d = d_1;
+                                    else
+                                        d_1.push(et, true);
+                                }
+                            },
+                            terminate: function () {
+                                if (d_1 && d_1.terminate)
+                                    d_1.terminate();
+                            }
+                        };
+                        if (sc_1 >= 0)
+                            file_1.size = sc_1, file_1.originalSize = su_1;
+                        this_1.onfile(file_1);
+                    }
+                    return "break";
+                }
+                else if (oc) {
+                    if (sig == 0x8074B50) {
+                        is = i += 12 + (oc == -2 && 8), f = 3, this_1.c = 0;
+                        return "break";
+                    }
+                    else if (sig == 0x2014B50) {
+                        is = i -= 4, f = 3, this_1.c = 0;
+                        return "break";
+                    }
+                }
+            };
+            var this_1 = this;
+            for (; i < l - 4; ++i) {
+                var state_1 = _loop_2();
+                if (state_1 === "break")
+                    break;
+            }
+            this.p = et;
+            if (oc < 0) {
+                var dat = f ? buf.subarray(0, is - 12 - (oc == -2 && 8) - (b4(buf, is - 16) == 0x8074B50 && 4)) : buf.subarray(0, i);
+                if (add)
+                    add.push(dat, !!f);
+                else
+                    this.k[+(f == 2)].push(dat);
+            }
+            if (f & 2)
+                return this.push(buf.subarray(i), final);
+            this.p = buf.subarray(i);
+        }
+        if (final) {
+            if (this.c)
+                err(13);
+            this.p = null;
+        }
+    };
+    /**
+     * Registers a decoder with the stream, allowing for files compressed with
+     * the compression type provided to be expanded correctly
+     * @param decoder The decoder constructor
+     */
+    Unzip.prototype.register = function (decoder) {
+        this.o[decoder.compression] = decoder;
+    };
+    return Unzip;
+}());
+exports.Unzip = Unzip;
+var mt = typeof queueMicrotask == 'function' ? queueMicrotask : typeof setTimeout == 'function' ? setTimeout : function (fn) { fn(); };
+function unzip(data, opts, cb) {
+    if (!cb)
+        cb = opts, opts = {};
+    if (typeof cb != 'function')
+        err(7);
+    var term = [];
+    var tAll = function () {
+        for (var i = 0; i < term.length; ++i)
+            term[i]();
+    };
+    var files = {};
+    var cbd = function (a, b) {
+        mt(function () { cb(a, b); });
+    };
+    mt(function () { cbd = cb; });
+    var e = data.length - 22;
+    for (; b4(data, e) != 0x6054B50; --e) {
+        if (!e || data.length - e > 65558) {
+            cbd(err(13, 0, 1), null);
+            return tAll;
+        }
+    }
+    ;
+    var lft = b2(data, e + 8);
+    if (lft) {
+        var c = lft;
+        var o = b4(data, e + 16);
+        var z = o == 4294967295 || c == 65535;
+        if (z) {
+            var ze = b4(data, e - 12);
+            z = b4(data, ze) == 0x6064B50;
+            if (z) {
+                c = lft = b4(data, ze + 32);
+                o = b4(data, ze + 48);
+            }
+        }
+        var fltr = opts && opts.filter;
+        var _loop_3 = function (i) {
+            var _a = zh(data, o, z), c_1 = _a[0], sc = _a[1], su = _a[2], fn = _a[3], no = _a[4], off = _a[5], b = slzh(data, off);
+            o = no;
+            var cbl = function (e, d) {
+                if (e) {
+                    tAll();
+                    cbd(e, null);
+                }
+                else {
+                    if (d)
+                        files[fn] = d;
+                    if (!--lft)
+                        cbd(null, files);
+                }
+            };
+            if (!fltr || fltr({
+                name: fn,
+                size: sc,
+                originalSize: su,
+                compression: c_1
+            })) {
+                if (!c_1)
+                    cbl(null, slc(data, b, b + sc));
+                else if (c_1 == 8) {
+                    var infl = data.subarray(b, b + sc);
+                    // Synchronously decompress under 512KB, or barely-compressed data
+                    if (su < 524288 || sc > 0.8 * su) {
+                        try {
+                            cbl(null, inflateSync(infl, { out: new u8(su) }));
+                        }
+                        catch (e) {
+                            cbl(e, null);
+                        }
+                    }
+                    else
+                        term.push(inflate(infl, { size: su }, cbl));
+                }
+                else
+                    cbl(err(14, 'unknown compression type ' + c_1, 1), null);
+            }
+            else
+                cbl(null, null);
+        };
+        for (var i = 0; i < c; ++i) {
+            _loop_3(i);
+        }
+    }
+    else
+        cbd(null, {});
+    return tAll;
+}
+exports.unzip = unzip;
+/**
+ * Synchronously decompresses a ZIP archive. Prefer using `unzip` for better
+ * performance with more than one file.
+ * @param data The raw compressed ZIP file
+ * @param opts The ZIP extraction options
+ * @returns The decompressed files
+ */
+function unzipSync(data, opts) {
+    var files = {};
+    var e = data.length - 22;
+    for (; b4(data, e) != 0x6054B50; --e) {
+        if (!e || data.length - e > 65558)
+            err(13);
+    }
+    ;
+    var c = b2(data, e + 8);
+    if (!c)
+        return {};
+    var o = b4(data, e + 16);
+    var z = o == 4294967295 || c == 65535;
+    if (z) {
+        var ze = b4(data, e - 12);
+        z = b4(data, ze) == 0x6064B50;
+        if (z) {
+            c = b4(data, ze + 32);
+            o = b4(data, ze + 48);
+        }
+    }
+    var fltr = opts && opts.filter;
+    for (var i = 0; i < c; ++i) {
+        var _a = zh(data, o, z), c_2 = _a[0], sc = _a[1], su = _a[2], f

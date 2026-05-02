@@ -1,0 +1,128 @@
+{
+  "name": "ZapMonei: Ativação Pós-Pagamento (Completo)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "asaas-payment-webhook",
+        "options": {}
+      },
+      "id": "webhook-asaas",
+      "name": "Webhook: Pagamento Recebido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "webhookId": "zapmonei-asaas-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "tableName": "users",
+        "columnToMatchOn": "whatsapp_number",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $json.body.customer_name }}",
+            "whatsapp_number": "={{ $json.body.customer_phone }}",
+            "plan": "={{ $json.body.plan }}",
+            "onboarding_status": "pending"
+          }
+        }
+      },
+      "id": "supabase-upsert-user",
+      "name": "Supabase: Criar/Atualizar Usuário",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/instance/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "0326ad2f6fcc4cb57a4e132812b1e4e1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"zapmonei_{{ $json.whatsapp_number }}\",\n  \"token\": \"{{ $json.id }}\"\n}",
+        "options": {
+          "continueOnFail": true
+        }
+      },
+      "id": "evogo-create-instance",
+      "name": "Evo-Go: Criar Instância",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "users",
+        "filters": {
+          "conditions": [
+            {
+              "column": "whatsapp_number",
+              "value": "={{ $('Supabase: Criar/Atualizar Usuário').item.json.whatsapp_number }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "whatsapp_instance_token": "={{ $json.data.token }}",
+            "whatsapp_instance_name": "={{ $json.data.name }}"
+          }
+        }
+      },
+      "id": "supabase-update-token",
+      "name": "Supabase: Salvar Token",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [950, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "0326ad2f6fcc4cb57a4e132812b1e4e1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Supabase: Criar/Atualizar Usuário').item.json.whatsapp_number }}\",\n  \"text\": \"👋 Olá, {{ $('Supabase: Criar/Atualizar Usuário').item.json.nome }}! Eu sou a *Kathy*, a chefe dos assistentes aqui no ZapMonei!\\n\\nSeu plano *{{ $('Supabase: Criar/Atualizar Usuário').item.json.plan }}* foi ativado com sucesso ✅\\n\\nEstou preparando um assistente financeiro novinho em folha só pra você! 🤖✨\\n\\nMas antes, preciso conectar ele ao seu WhatsApp.\\nMe diz uma coisa:\\n\\n*Você está usando agora o celular que vai usar com o seu assistente?*\\n\\n1️⃣ Sim, estou neste celular\\n2️⃣ Não, vou usar outro aparelho\"\n}"
+      },
+      "id": "kathy-boas-vindas",
+      "name": "Kathy: Boas-Vindas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1200, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Pagamento Recebido": {
+      "main": [[{ "node": "Supabase: Criar/Atualizar Usuário", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Criar/Atualizar Usuário": {
+      "main": [[{ "node": "Evo-Go: Criar Instância", "type": "main", "index": 0 }]]
+    },
+    "Evo-Go: Criar Instância": {
+      "main": [[{ "node": "Supabase: Salvar Token", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Salvar Token": {
+      "main": [[{ "node": "Kathy: Boas-Vindas", "type": "main", "index": 0 }]]
+    }
+  }
+}

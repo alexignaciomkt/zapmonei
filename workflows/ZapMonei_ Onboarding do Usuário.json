@@ -1,0 +1,179 @@
+{
+  "name": "ZapMonei: Onboarding do Usuário",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c7314e78-7dd7-4891-a5cf-b3c2dfa11409",
+      "name": "Gatilho: Iniciar Onboarding",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "494e59d7-a45a-4dd2-a119-2f93c6fe00fe",
+      "name": "Supabase: Buscar Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        208,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "pending"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "id": "0cffd783-4bde-48c7-925b-b29d0d765d39",
+      "name": "Switch: Roteador de Etapas",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://apigo.euattendo.com.br/message/sendText/{{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "0326ad2f6fcc4cb57e1e132812b1e1e1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Olá! Sou o ZapMonei, seu Assistente Financeiro 🤖.\n\nPara começar a te ajudar, por favor responda com o nome que você gostaria de me chamar:"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ed56d960-0e13-49f4-a5dc-0d59b32af861",
+      "name": "WhatsApp: Boas-vindas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        656,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "onboarding_status",
+              "fieldValue": "completed"
+            }
+          ]
+        }
+      },
+      "id": "ea6d2238-b811-4bf7-b236-184528047da2",
+      "name": "Supabase: Finalizar Onboarding",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        656,
+        608
+      ]
+    }
+  ],
+  "connections": {
+    "Gatilho: Iniciar Onboarding": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Buscar Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Buscar Status": {
+      "main": [
+        [
+          {
+            "node": "Switch: Roteador de Etapas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Roteador de Etapas": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp: Boas-vindas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Supabase: Finalizar Onboarding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

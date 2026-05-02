@@ -1,0 +1,120 @@
+{
+  "name": "ZapMonei: Leitor de Recibos (OCR) - Versão Estável",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analise este recibo. Extraia: tipo (ganho/gasto), valor, categoria e descricao. Responda APENAS o JSON no formato: {\"tipo\": \"ganho\", \"valor\": 10.0, \"categoria\": \"combustivel\", \"descricao\": \"texto\"}",
+        "options": {
+          "systemMessage": "Você é um assistente que lê recibos e responde apenas JSON puro."
+        }
+      },
+      "id": "bb10ebb4-9aa7-426e-9127-f1ed22a0a6f7",
+      "name": "IA: Analisador de Recibo",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "gemini-1.5-flash",
+        "options": {}
+      },
+      "id": "model-gemini-vision",
+      "name": "Cérebro: Gemini Vision",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        400,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  // Tenta extrair o JSON da resposta da IA\n  const text = $json.output || $json.text;\n  const jsonMatch = text.match(/\\{.*\\}/s);\n  const data = JSON.parse(jsonMatch ? jsonMatch[0] : text);\n  return data;\n} catch (e) {\n  return { erro: \"Não foi possível converter para JSON\", raw: $json.output };\n}"
+      },
+      "id": "code-parser-ocr",
+      "name": "Código: Tradutor JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "J2qTlfOlhEYUBdEQ",
+        "options": {}
+      },
+      "id": "97d57c44-4ee1-4fa6-8aa1-9cd4f9c4a7d4",
+      "name": "Pulo: Enviar ao Motor",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "eb674637-6734-4191-a518-8a1363e82536",
+      "name": "Entrada: Foto Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "model-gemini-vision": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA: Analisador de Recibo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entrada: Foto Manual": {
+      "main": [
+        [
+          {
+            "node": "IA: Analisador de Recibo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA: Analisador de Recibo": {
+      "main": [
+        [
+          {
+            "node": "Código: Tradutor JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Código: Tradutor JSON": {
+      "main": [
+        [
+          {
+            "node": "Pulo: Enviar ao Motor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

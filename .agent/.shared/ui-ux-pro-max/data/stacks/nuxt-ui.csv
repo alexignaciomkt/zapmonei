@@ -1,0 +1,359 @@
+sso 4 — Fluxo do WhatsApp passo a passo
+Perfeito.
+ Agora vamos desenhar a experiência principal do produto, que é onde ele realmente ganha vida.
+Como o seu sistema é voltado para motoristas de aplicativo, o WhatsApp precisa ser a interface mais importante.
+ Ou seja: o motorista não deve sentir que está “usando um sistema”, e sim conversando com um assistente financeiro.
+________________________________________
+1. Objetivo do fluxo
+Criar uma jornada simples, rápida e natural para que o usuário consiga:
+●	se cadastrar;
+●	conectar o WhatsApp;
+●	registrar ganhos;
+●	registrar gastos;
+●	enviar notas fiscais;
+●	consultar resumo financeiro;
+●	corrigir informações quando necessário.
+A regra de ouro aqui é:
+menos cliques, menos fricção, mais clareza
+________________________________________
+2. Princípios do fluxo
+Antes de entrar no passo a passo, vale definir os princípios que o fluxo precisa seguir:
+2.1 Simplicidade
+O usuário deve entender o que fazer sem manual.
+2.2 Resposta rápida
+Sempre que ele mandar algo, o sistema deve responder em poucos segundos.
+2.3 Linguagem humana
+Nada de termos técnicos.
+Exemplo:
+●	ruim: “transação processada com sucesso”
+●	bom: “Pronto, anotei seu ganho de R$ 52”
+2.4 Pouca pergunta de uma vez
+Se o sistema precisar confirmar algo, deve perguntar apenas o necessário.
+2.5 Contexto contínuo
+O sistema deve lembrar da conversa recente para não fazer o usuário repetir tudo.
+________________________________________
+3. Estrutura geral do fluxo
+O fluxo do WhatsApp pode ser dividido em 6 grandes momentos:
+1.	Boas-vindas e cadastro
+2.	Conexão e configuração inicial
+3.	Registro de ganho
+4.	Registro de gasto
+5.	Envio de nota fiscal
+6.	Consulta de resumo e suporte
+________________________________________
+4. Fluxo completo passo a passo
+________________________________________
+4.1 Primeiro contato com o sistema
+Objetivo
+Fazer o motorista entender rapidamente o que o sistema faz e como começar.
+Passo a passo
+1.	O usuário entra no sistema ou recebe um link de acesso.
+2.	Ele informa o número de telefone.
+3.	O sistema envia uma mensagem inicial no WhatsApp.
+4.	O bot se apresenta como assistente financeiro.
+5.	O sistema explica em uma frase o que ele pode fazer.
+Exemplo de mensagem
+“Oi, eu sou seu copiloto financeiro. Posso te ajudar a registrar ganhos, gastos e notas pelo WhatsApp. Vamos começar?”
+O que o sistema deve fazer
+●	identificar o número do usuário;
+●	abrir uma sessão de conversa;
+●	associar o WhatsApp ao cadastro;
+●	iniciar o onboarding.
+________________________________________
+4.2 Onboarding inicial
+Objetivo
+Coletar as informações mínimas para personalizar a experiência.
+Passo a passo
+1.	O bot pede o nome do usuário.
+2.	O bot pergunta a cidade.
+3.	O bot pergunta se ele trabalha com:
+○	Uber
+○	99
+○	entrega
+○	outro
+4.	O bot pergunta se usa:
+○	carro
+○	moto
+○	ambos
+5.	O bot pergunta se quer acompanhar:
+○	finanças pessoais
+○	finanças de trabalho
+○	ambas
+Exemplo de conversa
+Bot:
+“Qual é o seu nome?”
+Usuário:
+“Carlos”
+Bot:
+“Prazer, Carlos. Você trabalha com carro, moto ou ambos?”
+Regra importante
+Esse onboarding deve ser o mais curto possível.
+ Se ficar longo demais, o usuário pode desistir.
+Melhor prática
+Se quiser reduzir fricção, o sistema pode fazer isso em etapas curtas, e não tudo de uma vez.
+________________________________________
+4.3 Mensagem de boas-vindas final
+Objetivo
+Dar segurança e instrução clara de uso.
+Exemplo de mensagem
+“Pronto, Carlos. Agora você pode me mandar mensagens como:
+ ‘Ganhei R$ 80 na corrida’
+ ‘Gastei R$ 120 no posto’
+ ‘Vou mandar a nota’
+ ‘Quanto gastei hoje?’”
+O que isso resolve
+O usuário já sai do onboarding sabendo exatamente como usar.
+________________________________________
+5. Fluxo de registro de ganho
+________________________________________
+5.1 Quando o usuário envia um ganho
+Exemplo de entrada
+●	“Ganhei 85 na corrida”
+●	“Hoje fiz 210 no Uber”
+●	“Recebi Pix de 40”
+O que o sistema deve fazer
+1.	Receber a mensagem.
+2.	Identificar que se trata de um ganho.
+3.	Extrair o valor.
+4.	Extrair o contexto, se existir.
+5.	Salvar como entrada financeira.
+6.	Confirmar com o usuário.
+Exemplo de resposta
+“Perfeito, anotei seu ganho de R$ 85 como receita de trabalho.”
+________________________________________
+5.2 Se faltar informação
+Às vezes o usuário pode mandar algo incompleto.
+Exemplo
+“Ganhei hoje”
+Nesse caso o sistema deve:
+1.	perceber que falta valor;
+2.	pedir complemento de forma simples.
+Exemplo de resposta
+“Claro. Qual foi o valor do ganho?”
+Regra
+Nunca salvar ganho sem valor definido.
+________________________________________
+5.3 Se houver dúvida de interpretação
+Se a mensagem for ambígua, o sistema deve confirmar.
+Exemplo
+“Recebi 50”
+O sistema pode responder:
+“Esse valor foi uma corrida, um Pix ou outra entrada?”
+________________________________________
+6. Fluxo de registro de gasto
+________________________________________
+6.1 Quando o usuário envia um gasto
+Exemplo de entrada
+●	“Gastei 100 no posto”
+●	“Almoço de 25”
+●	“Lavagem do carro 35”
+●	“Pedágio 12”
+O que o sistema deve fazer
+1.	Receber a mensagem.
+2.	Identificar que é uma despesa.
+3.	Extrair o valor.
+4.	Sugerir uma categoria.
+5.	Identificar se é pessoal ou trabalho.
+6.	Confirmar ou perguntar.
+7.	Salvar o lançamento.
+Exemplo de resposta
+“Anotei R$ 100 como abastecimento para trabalho. Está correto?”
+________________________________________
+6.2 Se a categoria estiver clara
+Quando a mensagem já indicar bem a categoria, o sistema pode confirmar direto.
+Exemplo
+“Lavagem do carro 35”
+Resposta:
+“Anotei R$ 35 como lavagem do veículo para trabalho.”
+________________________________________
+6.3 Se a categoria estiver incerta
+Se a mensagem for vaga, o sistema pede escolha.
+Exemplo
+“Gastei 20”
+Resposta:
+“Esse gasto foi com quê? Posso classificar como alimentação, combustível, pedágio ou outro.”
+________________________________________
+6.4 Se for gasto pessoal
+O sistema também deve aceitar despesas pessoais sem atrapalhar.
+Exemplo
+“Comprei café e pão, 18 reais”
+Resposta:
+“Anotei R$ 18 como despesa pessoal.”
+________________________________________
+7. Fluxo de envio de nota fiscal
+________________________________________
+7.1 Quando o usuário manda uma foto
+Objetivo
+Permitir registrar despesas sem precisar digitar.
+Passo a passo
+1.	O usuário envia a foto da nota.
+2.	O sistema recebe a imagem.
+3.	O OCR tenta extrair valor, data e estabelecimento.
+4.	O sistema sugere uma categoria.
+5.	O usuário confirma ou corrige.
+6.	O lançamento é salvo.
+Exemplo de resposta
+“Identifiquei uma compra de R$ 137,80 no Posto X. Quer salvar como abastecimento para trabalho?”
+________________________________________
+7.2 Se a imagem estiver ruim
+Se a foto estiver escura ou borrada:
+“Não consegui ler com clareza. Você pode mandar outra foto ou digitar o valor?”
+Regra
+O sistema não deve insistir demais.
+ Se a imagem falhar, ele precisa oferecer alternativa rápida.
+________________________________________
+8. Fluxo de consulta de informações
+________________________________________
+8.1 Quando o usuário pergunta algo
+Exemplos:
+●	“Quanto eu ganhei hoje?”
+●	“Quanto gastei essa semana?”
+●	“Qual meu saldo do mês?”
+●	“Quanto foi combustível?”
+O que o sistema faz
+1.	Entende a intenção da pergunta.
+2.	Busca os dados do período.
+3.	Calcula o valor.
+4.	Responde de forma simples.
+Exemplo de resposta
+“Hoje você ganhou R$ 210 e gastou R$ 78. Seu saldo do dia é R$ 132.”
+________________________________________
+8.2 Perguntas mais específicas
+Exemplo:
+“Quanto gastei com combustível esse mês?”
+Resposta:
+“Você gastou R$ 1.240 com combustível neste mês.”
+________________________________________
+9. Fluxo de correção
+________________________________________
+9.1 Quando o sistema errar
+Se o sistema classificar algo errado, o usuário precisa corrigir de forma simples.
+Exemplo
+“Não, isso foi pessoal”
+Resposta do sistema:
+“Certo, ajustei para despesa pessoal.”
+O que acontece internamente
+1.	O lançamento é atualizado.
+2.	A correção é registrada.
+3.	O sistema aprende o padrão para futuras sugestões.
+________________________________________
+9.2 Quando o usuário quer editar um lançamento
+Exemplo
+“Corrige o valor para 120”
+Resposta:
+“Claro. Quer atualizar este lançamento para R$ 120?”
+________________________________________
+10. Fluxo de lembretes e reengajamento
+________________________________________
+Objetivo
+Fazer o usuário voltar ao sistema com naturalidade, sem parecer invasivo.
+Exemplo de lembrete
+“Você já registrou seus ganhos e gastos de hoje?”
+Ou:
+“Quer que eu te mostre o resumo do dia?”
+Quando usar
+●	fim do dia
+●	início da noite
+●	dias sem lançamento
+●	horários definidos pelo usuário
+________________________________________
+11. Fluxo ideal de conversa no dia a dia
+Aqui está a jornada resumida que o usuário viverá normalmente:
+Situação 1
+Ele dirige e manda:
+“Ganhei 65 na corrida”
+O sistema responde:
+“Anotei R$ 65 como ganho de trabalho.”
+Situação 2
+Mais tarde ele manda:
+“Gastei 30 no almoço”
+O sistema responde:
+“Anotei R$ 30 como despesa pessoal.”
+Situação 3
+Ele manda foto da nota:
+“Vou mandar a nota”
+O sistema responde:
+“Pode enviar a foto.”
+Situação 4
+No fim do dia ele pergunta:
+“Quanto sobrou hoje?”
+O sistema responde:
+“Hoje você ganhou R$ 210 e gastou R$ 78. Seu saldo foi R$ 132.”
+________________________________________
+12. Estados possíveis do fluxo
+É importante pensar no WhatsApp como uma sequência de estados.
+Estado 1 — Novo usuário
+●	ainda não fez onboarding
+Estado 2 — Usuário ativo
+●	já está cadastrado e pode lançar normalmente
+Estado 3 — Aguardando confirmação
+●	o sistema fez uma sugestão e espera resposta
+Estado 4 — Aguardando complemento
+●	faltou valor, categoria ou tipo
+Estado 5 — Processando imagem
+●	OCR em andamento
+Estado 6 — Fluxo concluído
+●	operação salva com sucesso
+________________________________________
+13. Regras de UX conversacional
+Regra 1
+Cada mensagem precisa ter um objetivo claro.
+Regra 2
+Não perguntar mais de uma coisa complexa por vez.
+Regra 3
+Sempre confirmar o que foi entendido.
+Regra 4
+Quando houver erro, explicar de forma simples.
+Regra 5
+Manter tom amigável e objetivo.
+________________________________________
+14. Mensagens-padrão do sistema
+Você pode usar mensagens padronizadas para manter consistência.
+Boas-vindas
+“Oi! Eu vou te ajudar a organizar seus ganhos e gastos pelo WhatsApp.”
+Confirmação de ganho
+“Anotei seu ganho de R$ X.”
+Confirmação de gasto
+“Anotei seu gasto de R$ X.”
+Pedido de informação faltante
+“Me diz o valor, por favor.”
+Pedido de confirmação
+“Está correto assim?”
+Falha no OCR
+“Não consegui ler a nota. Quer tentar outra foto?”
+Consulta de resumo
+“Seu resumo de hoje é o seguinte…”
+________________________________________
+15. Fluxo ideal em formato resumido
+Entrada
+Usuário manda texto, áudio ou imagem.
+Interpretação
+Sistema identifica intenção, valor e contexto.
+Validação
+Se faltar algo, o sistema pergunta.
+Registro
+Salva no banco.
+Confirmação
+Responde ao usuário com uma frase simples.
+Visualização
+Atualiza o painel e histórico.
+________________________________________
+16. O que esse fluxo precisa entregar no MVP
+Para a primeira versão, o fluxo do WhatsApp precisa fazer muito bem estas 5 coisas:
+1.	entender entradas simples;
+2.	registrar ganhos;
+3.	registrar gastos;
+4.	ler nota fiscal;
+5.	responder com clareza.
+Se isso funcionar bem, o produto já terá um valor enorme.
+________________________________________
+17. Minha recomendação prática
+Eu sugiro que o fluxo do WhatsApp seja desenhado em 3 camadas:
+Camada 1 — Conversa simples
+O que o usuário vê no WhatsApp.
+Camada 2 — Regras de interpretação
+Como o sistema entende valor, tipo e contexto.
+Camada 3 — Salvamento e relatório
+Como a informação vai para o banco e para o painel.
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
