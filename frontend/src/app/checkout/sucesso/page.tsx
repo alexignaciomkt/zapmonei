@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { CheckCircle2, Smartphone, MessageSquare, Sparkles, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -11,7 +11,7 @@ const steps = [
   { icon: MessageSquare, label: 'Enviando mensagem de boas-vindas', delay: 4000 },
 ];
 
-export default function SucessoPage() {
+function SucessoContent() {
   const searchParams = useSearchParams();
   const nome = searchParams.get('nome') || 'Motorista';
   
@@ -129,5 +129,13 @@ export default function SucessoPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function SucessoPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-bg-dark flex items-center justify-center text-white">Carregando...</div>}>
+      <SucessoContent />
+    </Suspense>
   );
 }
