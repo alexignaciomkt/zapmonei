@@ -13,7 +13,7 @@ const transactionSchema = z.object({
   category: z.string().min(1, 'Selecione uma categoria'),
   description: z.string().optional(),
   date: z.string().min(1, 'Selecione a data'),
-  is_work: z.boolean().default(true),
+  is_work: z.boolean(),
 });
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
