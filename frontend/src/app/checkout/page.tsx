@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Check, ArrowRight, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,7 +26,7 @@ const PLAN_DETAILS = {
   }
 };
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams();
   const planParam = searchParams.get('plan');
   
@@ -222,11 +222,19 @@ export default function CheckoutPage() {
           </div>
 
           <div className="bg-white/5 rounded-xl p-4 text-sm opacity-70">
-            Você terá <strong>7 dias de garantia</strong>. Se não gostar da experiência, devolvemos seu dinheiro.
+            Você terá <strong>7 dias de garantia</strong>. Se não gostar da experincia, devolvemos seu dinheiro.
           </div>
         </div>
 
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-bg-dark flex items-center justify-center text-white">Carregando...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }
