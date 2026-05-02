@@ -7,13 +7,18 @@ services:
         - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     container_name: zapmonei-frontend
     restart: always
-    ports:
-      - "3001:3000"
     environment:
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     networks:
       - automacoes
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.zapmonei.rule=Host(`zapmonei.com.br`)"
+        - "traefik.http.routers.zapmonei.entrypoints=websecure"
+        - "traefik.http.routers.zapmonei.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.zapmonei.loadbalancer.server.port=3000"
 
 networks:
   automacoes:
