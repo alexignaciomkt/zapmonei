@@ -243,7 +243,7 @@ export default function Dashboard() {
               <Tooltip
                 contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, fontSize: 12 }}
                 labelStyle={{ color: 'rgba(255,255,255,0.5)' }}
-                formatter={(v: number, n: string) => [fmt(v), n === 'ganho' ? 'Ganhos' : 'Gastos']}
+                formatter={(v: any, n: any) => [fmt(Number(v)), n === 'ganho' ? 'Ganhos' : 'Gastos']}
               />
               <Area type="monotone" dataKey="ganho" stroke="#CCFF00" strokeWidth={2} fill="url(#gGanho)" />
               <Area type="monotone" dataKey="gasto" stroke="#ef4444" strokeWidth={2} fill="url(#gGasto)" />
