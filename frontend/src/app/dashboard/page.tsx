@@ -67,29 +67,30 @@ export default function Dashboard() {
     setRefreshing(false);
   };
 
+  const initData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push('/login'); return; }
+
+    // Busca perfil na tabela users
+    const { data: profile } = await supabase
+      .from('users')
+      .select('id, nome')
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+
+    if (profile) {
+      setUserProfile(profile);
+      fetchTransactions(profile.id);
+    } else {
+      // Busca o nome nos metadados do Auth (salvo pela Kathy)
+      const fullName = user.user_metadata?.full_name || 'Motorista';
+      setUserProfile({ id: '', nome: fullName });
+      fetchTransactions('');
+    }
+  };
+
   useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push('/login'); return; }
-
-      // Busca perfil na tabela users
-      const { data: profile } = await supabase
-        .from('users')
-        .select('id, nome')
-        .eq('auth_user_id', user.id)
-        .maybeSingle();
-
-      if (profile) {
-        setUserProfile(profile);
-        fetchTransactions(profile.id);
-      } else {
-        // Busca o nome nos metadados do Auth (salvo pela Kathy)
-        const fullName = user.user_metadata?.full_name || 'Motorista';
-        setUserProfile({ id: '', nome: fullName });
-        fetchTransactions('');
-      }
-    };
-    init();
+    initData();
   }, []);
 
   const handleLogout = async () => {
@@ -418,9 +419,7 @@ export default function Dashboard() {
         onClose={() => setIsModalOpen(false)}
         userId={userProfile?.id}
         onSuccess={() => {
-          if (userProfile?.id) {
-            fetchTransactions(userProfile.id, true);
-          }
+          initData();
         }}
       />
     </div>

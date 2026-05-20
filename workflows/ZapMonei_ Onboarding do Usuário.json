@@ -7,10 +7,7 @@
       "name": "Gatilho: Iniciar Onboarding",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [
-        0,
-        400
-      ]
+      "position": [ -100, 400 ]
     },
     {
       "parameters": {
@@ -18,11 +15,7 @@
         "tableId": "users",
         "filters": {
           "conditions": [
-            {
-              "keyName": "id",
-              "condition": "eq",
-              "keyValue": "={{ $json.user_id }}"
-            }
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.user_id }}" }
           ]
         }
       },
@@ -30,150 +23,214 @@
       "name": "Supabase: Buscar Status",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [
-        208,
-        400
-      ]
+      "position": [ 120, 400 ]
     },
     {
       "parameters": {
         "rules": {
           "values": [
-            {
-              "conditions": {
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.onboarding_status }}",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "rightValue": "pending"
-                  }
-                ]
-              }
-            }
+            { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [ { "leftValue": "={{ $json.onboarding_step || 0 }}", "operator": { "type": "number", "operation": "equals" }, "rightValue": 0 } ], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [ { "leftValue": "={{ $json.onboarding_step }}", "operator": { "type": "number", "operation": "equals" }, "rightValue": 1 } ], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [ { "leftValue": "={{ $json.onboarding_step }}", "operator": { "type": "number", "operation": "equals" }, "rightValue": 2 } ], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [ { "leftValue": "={{ $json.onboarding_step }}", "operator": { "type": "number", "operation": "equals" }, "rightValue": 3 } ], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [ { "leftValue": "={{ $json.onboarding_step }}", "operator": { "type": "number", "operation": "equals" }, "rightValue": 4 } ], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [ { "leftValue": "={{ $json.onboarding_step }}", "operator": { "type": "number", "operation": "equals" }, "rightValue": 5 } ], "combinator": "and" } }
           ]
         }
       },
-      "id": "0cffd783-4bde-48c7-925b-b29d0d765d39",
-      "name": "Switch: Roteador de Etapas",
+      "id": "switch_v3",
+      "name": "Switch: Etapa do Onboarding",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
-      "position": [
-        400,
-        400
-      ]
+      "position": [ 380, 400 ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://apigo.euattendo.com.br/message/sendText/{{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance }}",
+        "url": "https://apigo.euattendo.com.br/send/text",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "0326ad2f6fcc4cb57e1e132812b1e1e1"
-            }
-          ]
-        },
+        "headerParameters": { "parameters": [ { "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}" } ] },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "number",
-              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
-            },
-            {
-              "name": "text",
-              "value": "Olá! Sou o ZapMonei, seu Assistente Financeiro 🤖.\n\nPara começar a te ajudar, por favor responda com o nome que você gostaria de me chamar:"
-            }
-          ]
-        },
-        "options": {}
+        "bodyParameters": { "parameters": [ { "name": "number", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}" }, { "name": "text", "value": "Olá! Eu sou seu novo Agente Financeiro Pessoal 🤖.\n\nA Kathy me disse que você é fera e vamos organizar tudo por aqui!\n\nPara começar: **Como você gostaria de me chamar?**\n*(Pode ser qualquer nome: Meu Sócio, Alfred, Contador... você escolhe!)*" } ] }
       },
-      "id": "ed56d960-0e13-49f4-a5dc-0d59b32af861",
-      "name": "WhatsApp: Boas-vindas",
+      "id": "ask_0",
+      "name": "Ask 0: Nome",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        656,
-        208
-      ]
+      "position": [ 660, 0 ]
     },
     {
       "parameters": {
         "operation": "update",
         "tableId": "users",
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "id",
-              "condition": "eq",
-              "keyValue": "={{ $json.id }}"
-            }
-          ]
-        },
-        "fieldsUi": {
-          "fieldValues": [
-            {
-              "fieldId": "onboarding_status",
-              "fieldValue": "completed"
-            }
-          ]
-        }
+        "filters": { "conditions": [ { "keyName": "id", "condition": "eq", "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}" } ] },
+        "fieldsUi": { "fieldValues": [ { "fieldId": "onboarding_step", "fieldValue": 1 }, { "fieldId": "onboarding_status", "fieldValue": "agent_onboarding" } ] }
       },
-      "id": "ea6d2238-b811-4bf7-b236-184528047da2",
-      "name": "Supabase: Finalizar Onboarding",
+      "id": "update_0",
+      "name": "Update 0",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [
-        656,
-        608
-      ]
+      "position": [ 860, 0 ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": { "conditions": [ { "keyName": "id", "condition": "eq", "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}" } ] },
+        "fieldsUi": { "fieldValues": [ { "fieldId": "agent_custom_name", "fieldValue": "={{ $json.content }}" }, { "fieldId": "onboarding_step", "fieldValue": 2 } ] }
+      },
+      "id": "save_1",
+      "name": "Save 1: Name",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [ 660, 150 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}" } ] },
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "number", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}" }, { "name": "text", "value": "Prazer em ser o *{{ $json.content }}*!\n\nAgora me diga, o que vamos organizar primeiro?\n\n1️⃣ Só meu Trabalho 💼\n2️⃣ Só minha Vida Pessoal 🏠\n3️⃣ Os dois (Quero separar o que ganho do que gasto!) ⚖️" } ] }
+      },
+      "id": "ask_1",
+      "name": "Ask 1: Escopo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [ 860, 150 ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": { "conditions": [ { "keyName": "id", "condition": "eq", "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}" } ] },
+        "fieldsUi": { "fieldValues": [ { "fieldId": "control_type", "fieldValue": "={{ $json.content }}" }, { "fieldId": "onboarding_step", "fieldValue": 3 } ] }
+      },
+      "id": "save_2",
+      "name": "Save 2: Scope",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [ 660, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}" } ] },
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "number", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}" }, { "name": "text", "value": "Entendido, {{ $node[\"Supabase: Buscar Status\"].json.nome }}! Vamos focar nisso.\n\nMe conta uma coisa: você faz parte do time que não para e trabalha como **Motorista de Aplicativo**? 🚗💨\n\n1️⃣ Sim, estou na pista!\n2️⃣ Não, trabalho com outra coisa." } ] }
+      },
+      "id": "ask_2",
+      "name": "Ask 2: Driver",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [ 860, 300 ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": { "conditions": [ { "keyName": "id", "condition": "eq", "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}" } ] },
+        "fieldsUi": { "fieldValues": [ { "fieldId": "is_driver", "fieldValue": "={{ $json.content.toLowerCase().includes('1') || $json.content.toLowerCase().includes('sim') }}" }, { "fieldId": "onboarding_step", "fieldValue": 4 } ] }
+      },
+      "id": "save_3",
+      "name": "Save 3: Driver",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [ 660, 450 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}" } ] },
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "number", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}" }, { "name": "text", "value": "={{ $json.is_driver ? \"Poxa, eu sei bem como é! Vida de motorista é correria pura e cada centavo conta, né? 😅\n\nPara eu te ajudar a não deixar nada escapar, quais plataformas você usa? (Ex: Uber, 99...)\" : \"Entendido! Controlar o dinheiro no dia a dia não é fácil para ninguém, mas estamos aqui para mudar isso. 💪\n\nQual sua maior dificuldade hoje?\n\n1️⃣ Não sei exatamente para onde vai meu dinheiro\n2️⃣ Preciso economizar mais para realizar meus sonhos\n3️⃣ Saber se o que ganho hoje é suficiente para o mês\" }}" } ] }
+      },
+      "id": "ask_3",
+      "name": "Ask 3: Platforms/Pain",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [ 860, 450 ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": { "conditions": [ { "keyName": "id", "condition": "eq", "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}" } ] },
+        "fieldsUi": { "fieldValues": [ { "fieldId": "onboarding_step", "fieldValue": 5 } ] }
+      },
+      "id": "save_4",
+      "name": "Save 4: Step",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [ 660, 600 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}" } ] },
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "number", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}" }, { "name": "text", "value": "Anotado! Vamos transformar essa realidade juntos. 🚀\n\nPara a gente traçar nossa estratégia, qual sua meta de **lucro livre** (dinheiro que sobra de verdade no bolso) por mês? \n\n*(Ex: R$ 3.500)*" } ] }
+      },
+      "id": "ask_4",
+      "name": "Ask 4: Meta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [ 860, 600 ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": { "conditions": [ { "keyName": "id", "condition": "eq", "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}" } ] },
+        "fieldsUi": { "fieldValues": [ { "fieldId": "onboarding_status", "fieldValue": "completed" }, { "fieldId": "monthly_goal", "fieldValue": "={{ $json.content.replace(/[^0-9]/g, '') }}" } ] }
+      },
+      "id": "save_5",
+      "name": "Save 5: Finish",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [ 660, 750 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "apikey", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}" } ] },
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "number", "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}" }, { "name": "text", "value": "✨ TUDO PRONTO, {{ $node[\"Supabase: Buscar Status\"].json.nome }}! ✨\n\nSeu painel exclusivo do ZapMonei já está ativo.\n\nAcesso: https://app.zapmonei.com.br/login\nSeu Login: *Seu número de WhatsApp*\nSenha: *A senha que você cadastrou no ato da compra*\n\nA partir de agora, o *{{ $node[\"Supabase: Buscar Status\"].json.agent_custom_name }}* está oficialmente no comando com você.\n\nQualquer gasto, áudio ou foto de recibo que você mandar, eu já organizo tudo na hora. Vamos bater essas metas? 💰🏁" } ] }
+      },
+      "id": "finish_msg",
+      "name": "Finish Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [ 860, 750 ]
     }
   ],
   "connections": {
-    "Gatilho: Iniciar Onboarding": {
+    "Gatilho: Iniciar Onboarding": { "main": [ [ { "node": "Supabase: Buscar Status", "type": "main", "index": 0 } ] ] },
+    "Supabase: Buscar Status": { "main": [ [ { "node": "Switch: Etapa do Onboarding", "type": "main", "index": 0 } ] ] },
+    "Switch: Etapa do Onboarding": {
       "main": [
-        [
-          {
-            "node": "Supabase: Buscar Status",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [ { "node": "Ask 0: Nome", "type": "main", "index": 0 } ],
+        [ { "node": "Save 1: Name", "type": "main", "index": 0 } ],
+        [ { "node": "Save 2: Scope", "type": "main", "index": 0 } ],
+        [ { "node": "Save 3: Driver", "type": "main", "index": 0 } ],
+        [ { "node": "Save 4: Step", "type": "main", "index": 0 } ],
+        [ { "node": "Save 5: Finish", "type": "main", "index": 0 } ]
       ]
     },
-    "Supabase: Buscar Status": {
-      "main": [
-        [
-          {
-            "node": "Switch: Roteador de Etapas",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch: Roteador de Etapas": {
-      "main": [
-        [
-          {
-            "node": "WhatsApp: Boas-vindas",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Supabase: Finalizar Onboarding",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Ask 0: Nome": { "main": [ [ { "node": "Update 0", "type": "main", "index": 0 } ] ] },
+    "Save 1: Name": { "main": [ [ { "node": "Ask 1: Escopo", "type": "main", "index": 0 } ] ] },
+    "Save 2: Scope": { "main": [ [ { "node": "Ask 2: Driver", "type": "main", "index": 0 } ] ] },
+    "Save 3: Driver": { "main": [ [ { "node": "Ask 3: Platforms/Pain", "type": "main", "index": 0 } ] ] },
+    "Save 4: Step": { "main": [ [ { "node": "Ask 4: Meta", "type": "main", "index": 0 } ] ] },
+    "Save 5: Finish": { "main": [ [ { "node": "Finish Message", "type": "main", "index": 0 } ] ] }
   }
 }

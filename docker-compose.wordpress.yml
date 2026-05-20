@@ -1,0 +1,108 @@
+# ============================================================
+# ZapMonei - WordPress Stack
+# Domínio: zapmonei.com.br
+# Gateway: Asaas (plugin: woo-asaas)
+# ============================================================
+# COMO USAR:
+#   1. Copie este arquivo para a VPS
+#   2. Crie o arquivo .env.wordpress com as variáveis abaixo
+#   3. Execute: docker compose -f docker-compose.wordpress.yml up -d
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # Banco de dados MariaDB (exclusivo para o WordPress)
+  # ----------------------------------------------------------
+  wordpress_db:
+    image: mariadb:10.11
+    container_name: zapmonei_wordpress_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${WP_DB_NAME}
+      MYSQL_USER: ${WP_DB_USER}
+      MYSQL_PASSWORD: ${WP_DB_PASSWORD}
+    volumes:
+      - wordpress_db_data:/var/lib/mysql
+    networks:
+      - automacoes
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------
+  # WordPress
+  # ----------------------------------------------------------
+  wordpress:
+    image: wordpress:6.5-php8.2-apache
+    container_name: zapmonei_wordpress
+    restart: unless-stopped
+    depends_on:
+      wordpress_db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: wordpress_db:3306
+      WORDPRESS_DB_NAME: ${WP_DB_NAME}
+      WORDPRESS_DB_USER: ${WP_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: zap_
+      # Performance
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_MEMORY_LIMIT', '256M');
+        define('WP_MAX_MEMORY_LIMIT', '512M');
+        define('WP_POST_REVISIONS', 5);
+        define('AUTOSAVE_INTERVAL', 300);
+        define('WP_DEBUG', false);
+        define('DISALLOW_FILE_EDIT', true);
+    volumes:
+      - wordpress_data:/var/www/html
+      - wordpress_uploads:/var/www/html/wp-content/uploads
+    networks:
+      - automacoes
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        # Traefik - HTTPS automático via Let's Encrypt
+        - "traefik.enable=true"
+
+        # Rota principal: zapmonei.com.br (raiz do domínio)
+        - "traefik.http.routers.wordpress.rule=Host(`zapmonei.com.br`) || Host(`www.zapmonei.com.br`)"
+        - "traefik.http.routers.wordpress.entrypoints=websecure"
+        - "traefik.http.routers.wordpress.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.wordpress.loadbalancer.server.port=80"
+
+        # Redirect www → sem www
+        - "traefik.http.middlewares.wordpress-www.redirectregex.regex=^https://www\\.zapmonei\\.com\\.br/(.*)"
+        - "traefik.http.middlewares.wordpress-www.redirectregex.replacement=https://zapmonei.com.br/$${1}"
+        - "traefik.http.middlewares.wordpress-www.redirectregex.permanent=true"
+        - "traefik.http.routers.wordpress.middlewares=wordpress-www"
+
+        # Redirect HTTP → HTTPS
+        - "traefik.http.routers.wordpress-http.rule=Host(`zapmonei.com.br`) || Host(`www.zapmonei.com.br`)"
+        - "traefik.http.routers.wordpress-http.entrypoints=web"
+        - "traefik.http.routers.wordpress-http.middlewares=redirect-to-https@docker"
+
+# ----------------------------------------------------------
+# NOTA IMPORTANTE:
+# O dashboard Next.js (app.zapmonei.com.br) CONTINUA rodando
+# em paralelo no mesmo Traefik, sem conflito.
+# O Traefik já existente na rede "automacoes" vai gerenciar
+# os dois serviços automaticamente pelo hostname.
+# ----------------------------------------------------------
+
+volumes:
+  wordpress_db_data:
+    driver: local
+  wordpress_data:
+    driver: local
+  wordpress_uploads:
+    driver: local
+
+networks:
+  automacoes:
+    external: true

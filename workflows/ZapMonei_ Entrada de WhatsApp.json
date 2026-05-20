@@ -101,8 +101,21 @@
     },
     {
       "parameters": {
-        "workflowId": "9isljiCxkbeAagiJ",
-        "options": {}
+        "workflowId": "ZapMonei: Onboarding do Usuário",
+        "options": {},
+        "mode": "each",
+        "parameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $node[\"Supabase: Buscar Usuário\"].json.id }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $node[\"Webhook: Entrada do WhatsApp\"].json.data.message?.conversation || $node[\"Webhook: Entrada do WhatsApp\"].json.data.message?.extendedTextMessage?.text }}"
+            }
+          ]
+        }
       },
       "id": "257df269-425b-4105-bc8a-72361cfffcbf",
       "name": "Executar: Fluxo de Boas-vindas",

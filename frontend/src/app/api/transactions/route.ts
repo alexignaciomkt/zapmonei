@@ -1,8 +1,15 @@
 import { createClient } from '@/lib/supabase-server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
+  
+  // Admin client to bypass RLS for profile creation/linking
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   try {
     const body = await request.json();
@@ -16,8 +23,8 @@ export async function POST(request: Request) {
       console.log('API Auth Check:', { user: user?.id, error: authError });
       
       if (user) {
-        // 1. Busca o ID interno na tabela public.users pelo auth_user_id
-        let { data: profile } = await supabase
+        // 1. Busca o ID interno na tabela public.users pelo auth_user_id (Usando admin client para evitar RLS)
+        let { data: profile } = await supabaseAdmin
           .from('users')
           .select('id')
           .eq('auth_user_id', user.id)
@@ -26,7 +33,7 @@ export async function POST(request: Request) {
         // 2. Se não achou pelo auth_user_id, tenta pelo número de WhatsApp
         if (!profile) {
           const whatsapp = user.user_metadata?.whatsapp || user.email?.split('@')[0];
-          const { data: profileByWa } = await supabase
+          const { data: profileByWa } = await supabaseAdmin
             .from('users')
             .select('id')
             .eq('whatsapp_number', whatsapp)
@@ -34,7 +41,7 @@ export async function POST(request: Request) {
           
           if (profileByWa) {
             // Vincula o auth_user_id ao perfil existente
-            await supabase
+            await supabaseAdmin
               .from('users')
               .update({ auth_user_id: user.id })
               .eq('id', profileByWa.id);
@@ -42,9 +49,9 @@ export async function POST(request: Request) {
           }
         }
 
-        // 3. Se ainda assim não existe, cria ele agora
+        // 3. Se ainda assim não existe, cria ele agora usando admin client
         if (!profile) {
-          const { data: newProfile, error: createError } = await supabase
+          const { data: newProfile, error: createError } = await supabaseAdmin
             .from('users')
             .insert([
               {
@@ -79,7 +86,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Perfil do usuário não encontrado no banco' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    // A inserção da transação é feita com o admin client também para garantir que não haja problemas
+    // se as políticas RLS para 'transactions' também não estiverem bem configuradas ainda
+    const { data, error } = await supabaseAdmin
       .from('transactions')
       .insert([
         {

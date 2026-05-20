@@ -1,0 +1,207 @@
+<section class="final-cta-section">
+  <div class="cta-container">
+    
+    <!-- Caixa do Card de Ação Principal -->
+    <div class="cta-box">
+      
+      <!-- Detalhe decorativo neon -->
+      <div class="cta-glow"></div>
+
+      <div class="cta-content">
+        <span class="cta-badge">O MOMENTO É AGORA</span>
+        <h2 class="cta-title">Cada dia sem controle é dinheiro perdido pelo escapamento</h2>
+        <p class="cta-subtitle">Enquanto você lê isto, centenas de motoristas parceiros já estão economizando e descobrindo para onde o dinheiro está indo. Não fique para trás.</p>
+
+        <!-- Botão de Ação -->
+        <a href="#planos" class="cta-btn-pulse">
+          COMEÇAR AGORA POR R$ 49,90/mês
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="btn-arrow"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+
+        <!-- Garantias e Badges -->
+        <div class="cta-trust-badges">
+          <div class="trust-badge-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>7 Dias de Garantia</span>
+          </div>
+          <div class="trust-badge-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            <span>Ativação Instantânea</span>
+          </div>
+          <div class="trust-badge-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span>Sem Fidelidade</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .final-cta-section {
+    font-family: 'Outfit', 'Inter', sans-serif;
+    color: #FFFFFF;
+    padding: 20px 10px;
+    background-color: transparent;
+  }
+
+  .cta-container {
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+
+  /* Caixa Principal com Bordas Neon */
+  .cta-box {
+    background-color: #0A0A0A;
+    border: 1px solid rgba(204, 255, 0, 0.1);
+    border-radius: 32px;
+    padding: 80px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
+  }
+
+  /* Efeito de Luz Verde ao Fundo */
+  .cta-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(204, 255, 0, 0.08) 0%, transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .cta-content {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .cta-badge {
+    color: #CCFF00;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+
+  .cta-title {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0 0 20px 0;
+    background: linear-gradient(180deg, #FFFFFF 0%, #A3A3A3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+
+  .cta-subtitle {
+    font-size: 16px;
+    color: #94A3B8;
+    line-height: 1.6;
+    margin: 0 0 40px 0;
+  }
+
+  /* Botão Pulsante */
+  .cta-btn-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #CCFF00;
+    color: #0A0A0A;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 20px 42px;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 0 30px rgba(204, 255, 0, 0.3);
+    animation: cta-pulse 2s infinite;
+  }
+
+  .cta-btn-pulse:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 45px rgba(204, 255, 0, 0.5);
+    background-color: #d8ff33;
+  }
+
+  .btn-arrow {
+    transition: transform 0.3s;
+  }
+
+  .cta-btn-pulse:hover .btn-arrow {
+    transform: translateX(4px);
+  }
+
+  /* Badges de Confiança */
+  .cta-trust-badges {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 50px;
+    flex-wrap: wrap;
+  }
+
+  .trust-badge-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #94A3B8;
+  }
+
+  .trust-badge-item span {
+    font-weight: 600;
+  }
+
+  /* Keyframes do Pulso */
+  @keyframes cta-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 18px rgba(204, 255, 0, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(204, 255, 0, 0);
+    }
+  }
+
+  /* Responsividade */
+  @media (max-width: 767px) {
+    .cta-box {
+      padding: 50px 24px;
+      border-radius: 24px;
+    }
+    .cta-title {
+      font-size: 28px;
+    }
+    .cta-subtitle {
+      font-size: 14.5px;
+      margin-bottom: 30px;
+    }
+    .cta-btn-pulse {
+      padding: 16px 28px;
+      font-size: 14.5px;
+      width: 100%;
+      justify-content: center;
+    }
+    .cta-trust-badges {
+      gap: 16px;
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>

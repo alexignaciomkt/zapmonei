@@ -1,0 +1,99 @@
+[
+  {
+    "id": "hero_section",
+    "elType": "section",
+    "settings": {
+      "background_background": "classic",
+      "background_color": "#050505",
+      "padding": {
+        "unit": "px",
+        "top": "100",
+        "right": "0",
+        "bottom": "100",
+        "left": "0",
+        "isLinked": false
+      }
+    },
+    "elements": [
+      {
+        "id": "hero_container",
+        "elType": "column",
+        "settings": {
+          "width": {
+            "unit": "%",
+            "size": 50
+          }
+        },
+        "elements": [
+          {
+            "id": "hero_badge",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "🚀 NOVO: GESTÃO FAMILIAR LIBERADA",
+              "header_size": "div",
+              "style_color": "#CCFF00",
+              "typography_typography": "custom",
+              "typography_font_size": { "unit": "px", "size": 12 },
+              "typography_font_weight": "bold",
+              "typography_text_transform": "uppercase"
+            }
+          },
+          {
+            "id": "hero_title",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "Sua meta de hoje no seu bolso.",
+              "header_size": "h1",
+              "style_color": "#ffffff",
+              "typography_typography": "custom",
+              "typography_font_size": { "unit": "px", "size": 80 },
+              "typography_line_height": { "unit": "em", "size": 0.9 },
+              "typography_font_weight": "900"
+            }
+          },
+          {
+            "id": "hero_button",
+            "elType": "widget",
+            "widgetType": "button",
+            "settings": {
+              "text": "Começar 3 Dias Grátis",
+              "link": { "url": "#pricing" },
+              "button_type": "success",
+              "align": "left",
+              "typography_typography": "custom",
+              "typography_font_weight": "bold",
+              "background_color": "#CCFF00",
+              "color": "#050505",
+              "border_radius": { "unit": "px", "size": 20 }
+            }
+          }
+        ]
+      },
+      {
+        "id": "hero_visual",
+        "elType": "column",
+        "settings": {
+          "width": {
+            "unit": "%",
+            "size": 50
+          }
+        },
+        "elements": [
+          {
+            "id": "hero_main_img",
+            "elType": "widget",
+            "widgetType": "image",
+            "settings": {
+              "image": {
+                "url": "https://zapmonei.com.br/wp-content/uploads/2026/05/zapmonei_hero_driver_1778630506684.jpg",
+                "id": 25
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

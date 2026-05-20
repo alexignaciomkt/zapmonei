@@ -1,0 +1,1062 @@
+{
+  "name": "ZapMonei: Onboarding do Usuário",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "bb8b13a4-5abd-46df-89f6-7c63f276fd57",
+      "name": "Gatilho: Iniciar Onboarding",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "a8dd7ff9-84ff-4301-8b60-5f97081e14dc",
+      "name": "Supabase: Buscar Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -950,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 0
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 1
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 2
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 3
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 4
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 5
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 6
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.onboarding_step || 0 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "rightValue": 7
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        }
+      },
+      "id": "542c0fa8-97bb-49dd-a758-63f128199d68",
+      "name": "Switch: Etapa do Onboarding",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -700,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "gemini-model",
+      "name": "Gemini Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Fala, {{ $node[\"Supabase: Buscar Status\"].json.nome }}! Sou seu novo Agente Financeiro e meu único trabalho é fazer seu dinheiro render e sobrar. 🚀\n\nPara a gente selar essa parceria: **Como você quer me chamar?**\n(Pode ser Alfred, Meu Sócio, Contador... você quem manda!)"
+            }
+          ]
+        }
+      },
+      "id": "node-ask-0",
+      "name": "Ask 0: Nome Agente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -400,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": 1
+            },
+            {
+              "fieldId": "onboarding_status",
+              "fieldValue": "agent_onboarding"
+            }
+          ]
+        }
+      },
+      "id": "node-save-0",
+      "name": "Save 0: Start",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -150,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "agent_custom_name",
+              "fieldValue": "={{ $json.content }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": 2
+            }
+          ]
+        }
+      },
+      "id": "node-save-1",
+      "name": "Save 1: Nome Agente",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -250
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Prazer em ser o *{{ $json.agent_custom_name }}*! Vou cuidar de tudo por aqui.\n\nPara eu te dar os parabéns e quem sabe te mandar um presente no futuro, quando é o seu aniversário? 🎂\n(Me manda assim: 15/05/1990)"
+            }
+          ]
+        }
+      },
+      "id": "node-ask-1",
+      "name": "Ask 1: Aniversário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -150,
+        -250
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extraia a data de nascimento da mensagem: \"{{ $json.content }}\". Retorne APENAS o JSON: {\"date\": \"YYYY-MM-DD\"}. Se não houver ano, use 1990.",
+        "options": {
+          "systemMessage": "Você é um extrator de dados preciso. Responda apenas JSON."
+        }
+      },
+      "id": "ia-clean-date",
+      "name": "IA: Limpar Data",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        100,
+        -250
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "birth_date",
+              "fieldValue": "={{ JSON.parse($json.output).date }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": 3
+            }
+          ]
+        }
+      },
+      "id": "node-save-2",
+      "name": "Save 2: Aniversário",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Anotado! O *{{ $node[\"Supabase: Buscar Status\"].json.agent_custom_name }}* já guardou essa data. 🎈\n\nAgora, me conta da sua rotina. Como você trabalha hoje?\n\n1️⃣ Vivo 100% de Apps (Uber, 99, etc)\n2️⃣ Tenho um trabalho fixo e faço App nas horas vagas\n3️⃣ Não trabalho com Apps, quero organizar minha vida pessoal"
+            }
+          ]
+        }
+      },
+      "id": "node-ask-2",
+      "name": "Ask 2: Rotina",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -150,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "is_driver",
+              "fieldValue": "={{ $json.content.includes('1') || $json.content.includes('2') }}"
+            },
+            {
+              "fieldId": "has_fixed_job",
+              "fieldValue": "={{ $json.content.includes('2') }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": 4
+            }
+          ]
+        }
+      },
+      "id": "node-save-3",
+      "name": "Save 3: Rotina",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        50
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Entendido. E o que vamos organizar primeiro?\n\n1️⃣ Só meu Trabalho 💼\n2️⃣ Só minha Vida Pessoal 🏠\n3️⃣ Os dois (Quero separar o que ganho do que gasto!) ⚖️"
+            }
+          ]
+        }
+      },
+      "id": "node-ask-3",
+      "name": "Ask 3: Escopo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -150,
+        50
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "control_type",
+              "fieldValue": "={{ $json.content }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": 5
+            }
+          ]
+        }
+      },
+      "id": "node-save-4",
+      "name": "Save 4: Escopo",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Vamos pensar no hoje! Qual a sua **meta de ganho limpo por dia** de trabalho? Aquele valor que te faz voltar pra casa tranquilo. 🎯\n(Ex: R$ 250)"
+            }
+          ]
+        }
+      },
+      "id": "node-ask-4",
+      "name": "Ask 4: Meta Diária",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -150,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extraia apenas o valor numérico da meta diária da mensagem: \"{{ $json.content }}\". Retorne APENAS o JSON: {\"value\": 250.00}.",
+        "options": {
+          "systemMessage": "Você é um extrator numérico. Responda apenas JSON."
+        }
+      },
+      "id": "ia-clean-meta",
+      "name": "IA: Limpar Meta",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "daily_goal",
+              "fieldValue": "={{ JSON.parse($json.output).value }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": 6
+            }
+          ]
+        }
+      },
+      "id": "node-save-5",
+      "name": "Save 5: Meta",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Show! Agora o diferencial: me lista seus **gastos fixos pessoais** (Aluguel, Luz, Internet...). Manda o nome e o valor.\n\nEu vou lembrar deles todo mês pra você, sem você precisar digitar de novo! 🧠"
+            }
+          ]
+        }
+      },
+      "id": "node-ask-5",
+      "name": "Ask 5: Gastos Fixos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -150,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "fixed_expenses",
+              "fieldValue": "={{ JSON.stringify([{item: 'Lista Inicial', details: $json.content}]) }}"
+            },
+            {
+              "fieldId": "onboarding_step",
+              "fieldValue": 7
+            }
+          ]
+        }
+      },
+      "id": "node-save-6",
+      "name": "Save 6: Gastos",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "Sensacional! Olha o que eu vou te entregar todo dia:\n✅ Seu Lucro Real (limpo!)\n📈 Ganhos e Custos por KM\n⛽ Saúde do seu Carro\n\nE o melhor: **pode mandar tudo na hora!** Comeu um lanche? Manda um áudio ou foto do recibo. Eu me viro pra processar. Só não esquece, porque eu não leio pensamento! 😂\n\nPodemos começar nosso primeiro dia?"
+            }
+          ]
+        }
+      },
+      "id": "node-ask-6",
+      "name": "Ask 6: WOW",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -150,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Supabase: Buscar Status\"].json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "onboarding_status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "onboarding_completed_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-save-7",
+      "name": "Save 7: Finalize",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        650
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apigo.euattendo.com.br/send/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_instance_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Supabase: Buscar Status\"].json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "✨ TUDO PRONTO! ✨\n\nSeu painel exclusivo do ZapMonei já está ativo. \n\nQualquer gasto, áudio ou foto de recibo que você mandar, eu já organizo tudo na hora. Vamos fazer esse dinheiro render! 💰🏁"
+            }
+          ]
+        }
+      },
+      "id": "node-finish",
+      "name": "Finish Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -150,
+        650
+      ]
+    }
+  ],
+  "connections": {
+    "Gatilho: Iniciar Onboarding": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Buscar Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Buscar Status": {
+      "main": [
+        [
+          {
+            "node": "Switch: Etapa do Onboarding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Etapa do Onboarding": {
+      "main": [
+        [
+          {
+            "node": "Ask 0: Nome Agente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save 1: Nome Agente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA: Limpar Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save 3: Rotina",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save 4: Escopo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA: Limpar Meta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save 6: Gastos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save 7: Finalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask 0: Nome Agente": {
+      "main": [
+        [
+          {
+            "node": "Save 0: Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save 1: Nome Agente": {
+      "main": [
+        [
+          {
+            "node": "Ask 1: Aniversário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA: Limpar Data": {
+      "main": [
+        [
+          {
+            "node": "Save 2: Aniversário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save 2: Aniversário": {
+      "main": [
+        [
+          {
+            "node": "Ask 2: Rotina",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save 3: Rotina": {
+      "main": [
+        [
+          {
+            "node": "Ask 3: Escopo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save 4: Escopo": {
+      "main": [
+        [
+          {
+            "node": "Ask 4: Meta Diária",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA: Limpar Meta": {
+      "main": [
+        [
+          {
+            "node": "Save 5: Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save 5: Meta": {
+      "main": [
+        [
+          {
+            "node": "Ask 5: Gastos Fixos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save 6: Gastos": {
+      "main": [
+        [
+          {
+            "node": "Ask 6: WOW",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save 7: Finalize": {
+      "main": [
+        [
+          {
+            "node": "Finish Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ia-clean-date",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ia-clean-meta",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
