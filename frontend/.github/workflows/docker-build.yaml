@@ -19,6 +19,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Verificar presença de Secrets do Supabase
+        run: |
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]; then
+            echo "ERROR: NEXT_PUBLIC_SUPABASE_URL não está definido"
+            exit 1
+          else
+            echo "OK: NEXT_PUBLIC_SUPABASE_URL está definido"
+          fi
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]; then
+            echo "ERROR: NEXT_PUBLIC_SUPABASE_ANON_KEY não está definido"
+            exit 1
+          else
+            echo "OK: NEXT_PUBLIC_SUPABASE_ANON_KEY está definido"
+          fi    
+
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
