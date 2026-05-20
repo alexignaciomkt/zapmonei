@@ -1,0 +1,10 @@
+node_modules
+.next
+.next_old
+.cache
+out
+build
+.git
+.dockerignore
+Dockerfile
+npm-debug.log
