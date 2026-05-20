@@ -34,7 +34,3 @@ jobs:
           tags: alexignacio/zapmonei-frontend:latest
           cache-from: type=registry,ref=alexignacio/zapmonei-frontend:buildcache
           cache-to: type=registry,ref=alexignacio/zapmonei-frontend:buildcache,mode=max
-
-      - name: Disparar Webhook do Portainer
-        run: |
-          curl -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
