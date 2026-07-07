@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.zapmonei.com.br';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 export interface UserProfile {
   id: string;
