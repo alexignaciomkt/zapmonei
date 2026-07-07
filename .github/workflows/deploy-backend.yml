@@ -1,12 +1,12 @@
-name: Build and Push Frontend Docker Image
+name: Build and Push Backend Docker Image
 
 on:
   push:
     branches:
       - master
     paths:
-      - 'frontend/**'
-      - '.github/workflows/deploy.yml'
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
 
 jobs:
   build-and-push:
@@ -28,9 +28,9 @@ jobs:
       - name: Build and Push Image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
-          tags: a2system/zapmonei-frontend:latest
-          cache-from: type=registry,ref=a2system/zapmonei-frontend:buildcache
-          cache-to: type=registry,ref=a2system/zapmonei-frontend:buildcache,mode=max
+          tags: a2system/zapmoneiapi:latest
+          cache-from: type=registry,ref=a2system/zapmoneiapi:buildcache
+          cache-to: type=registry,ref=a2system/zapmoneiapi:buildcache,mode=max

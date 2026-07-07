@@ -1,23 +1,53 @@
+version: '3.8'
+
 services:
+  # ── FRONTEND (Next.js Painel Web) ──
   frontend:
-    # No Swarm, a imagem deve ser pré-construída
-    image: alexignacio/zapmonei-frontend:latest
+    image: a2system/zapmonei-frontend:latest
     networks:
       - automacoes
     environment:
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_API_URL=https://api.zapmonei.com.br
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.zapmonei.rule=Host(`zapmonei.com.br`)"
+        - "traefik.http.routers.zapmonei.rule=Host(`app.zapmonei.com.br`)"
         - "traefik.http.routers.zapmonei.entrypoints=websecure"
         - "traefik.http.routers.zapmonei.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.zapmonei.loadbalancer.server.port=3000"
 
+  # ── BACKEND (Express API V2) ──
+  zapmonei-api:
+    image: a2system/zapmoneiapi:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - automacoes
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:euattendo010203@postgres:5432/zapmonei?schema=public
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=euattendo010203
+      - EVOLUTION_URL=https://apigo.euattendo.com.br
+      - EVOLUTION_MASTER_KEY=0326ad2f6fcc4cb57e1e132812b1e1e1
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}
+      - ASAAS_API_KEY=${ASAAS_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+
 networks:
   automacoes:
     external: true
+    name: automacoes

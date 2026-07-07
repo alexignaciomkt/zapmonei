@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: zapmonei_v2_redis_dev
+    ports:
+      - "6379:6379"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zapmonei_v2_app_dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://zapmonei_user:zapmonei_password@your-vps-ip:5432/zapmonei_db?schema=public
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ACCESS_KEY=minio_access_key
+      - MINIO_SECRET_KEY=minio_secret_key
+      - MINIO_BUCKET_NAME=zapmonei-attachments
+      - EVOLUTION_URL=https://apigo.euattendo.com.br
+      - EVOLUTION_API_KEY=zapmonei_api_key
+      - GEMINI_API_KEY=your_gemini_api_key
+      - ASAAS_URL=https://sandbox.asaas.com/api/v3
+      - ASAAS_API_KEY=your_asaas_api_key
+      - WOOCOMMERCE_URL=https://your-wordpress-site.com
+      - WOOCOMMERCE_CONSUMER_KEY=your_ck
+      - WOOCOMMERCE_CONSUMER_SECRET=your_cs
+    command: npm run dev
+    depends_on:
+      - redis

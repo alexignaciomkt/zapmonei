@@ -1,0 +1,11 @@
+Title,Slug,categoria_uber,consumo_gasolina,consumo_etanol,consumo_gnv,manutencao_km,depreciacao_anual
+Chevrolet Onix 1.0,chevrolet-onix,UberX / 99Pop,13.3,9.4,14.5,0.16,9
+Hyundai HB20 1.0,hyundai-hb20,UberX / 99Pop,12.8,9.1,14.0,0.17,10
+Fiat Cronos 1.3,fiat-cronos,UberX / Comfort / 99Pop,13.0,9.3,14.2,0.18,9
+Renault Kwid 1.0,renault-kwid,UberX / 99Pop,14.9,10.3,16.0,0.14,11
+Ford Ka 1.0,ford-ka,UberX / 99Pop,13.4,9.2,14.6,0.18,12
+Fiat Argo 1.0,fiat-argo,UberX / 99Pop,13.2,9.3,14.4,0.16,10
+Toyota Etios 1.3,toyota-etios,UberX / 99Pop,12.6,8.6,13.8,0.15,8
+Volkswagen Gol 1.0,volkswagen-gol,UberX / 99Pop,13.3,9.1,14.3,0.17,11
+Nissan Versa 1.6,nissan-versa,UberX / Comfort / 99Pop,11.8,8.4,13.2,0.19,9
+Renault Logan 1.0,renault-logan,UberX / 99Pop,13.2,9.0,14.1,0.17,11

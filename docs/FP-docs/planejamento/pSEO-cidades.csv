@@ -1,0 +1,51 @@
+Title,Slug,estado_sigla,preco_gasolina,preco_etanol,preco_gnv,ganho_medio_hora,km_medio_dia
+São Paulo,sao-paulo-sp,SP,5.82,3.85,4.39,32.00,180
+Rio de Janeiro,rio-de-janeiro-rj,RJ,6.05,4.10,4.45,29.50,160
+Belo Horizonte,belo-horizonte-mg,MG,5.89,3.75,4.55,27.00,170
+Brasília,brasilia-df,DF,6.15,3.99,4.69,30.00,200
+Curitiba,curitiba-pr,PR,5.95,3.89,4.49,26.50,175
+Porto Alegre,porto-alegre-rs,RS,6.10,4.05,4.75,27.50,170
+Salvador,salvador-ba,BA,6.09,4.20,4.60,25.00,165
+Fortaleza,fortaleza-ce,CE,5.99,4.15,4.65,24.50,180
+Recife,recife-pe,PE,5.85,3.95,4.35,26.00,170
+Manaus,manaus-am,AM,6.30,4.35,4.99,28.00,190
+Campinas,campinas-sp,SP,5.78,3.79,4.32,29.00,180
+Guarulhos,guarulhos-sp,SP,5.80,3.82,4.35,30.50,185
+São Bernardo do Campo,sao-bernardo-do-campo-sp,SP,5.81,3.83,4.36,29.50,175
+Santo André,santo-andre-sp,SP,5.82,3.84,4.38,29.00,170
+Osasco,osasco-sp,SP,5.79,3.80,4.34,30.00,180
+São José dos Campos,sao-jose-dos-campos-sp,SP,5.80,3.78,4.35,27.50,180
+Ribeirão Preto,ribeirao-preto-sp,SP,5.84,3.75,4.40,26.00,175
+Sorocaba,sorocaba-sp,SP,5.79,3.76,4.30,27.00,180
+Santos,santos-sp,SP,5.89,3.90,4.42,28.00,160
+Jundiaí,jundiai-sp,SP,5.78,3.78,4.31,28.50,175
+Niterói,niteroi-rj,RJ,6.08,4.12,4.48,28.50,150
+Duque de Caxias,duque-de-caxias-rj,RJ,6.02,4.08,4.42,27.00,170
+São Gonçalo,sao-goncalo-rj,RJ,6.04,4.09,4.44,26.00,165
+Nova Iguaçu,nova-iguacu-rj,RJ,6.03,4.07,4.43,26.50,170
+Uberlândia,uberlandia-mg,MG,5.87,3.72,4.52,25.50,180
+Juiz de Fora,juiz-de-fora-mg,MG,5.92,3.79,4.58,24.00,160
+Contagem,contagem-mg,MG,5.88,3.74,4.54,26.50,175
+Vila Velha,vila-velha-es,ES,5.90,3.99,4.49,25.00,160
+Vitória,vitoria-es,ES,5.92,4.02,4.52,26.00,165
+Serra,serra-es,ES,5.89,3.98,4.48,24.50,170
+Goiânia,goiania-go,GO,5.85,3.70,4.50,27.50,190
+Aparecida de Goiânia,aparecida-de-goiania-go,GO,5.86,3.72,4.52,26.00,185
+Campo Grande,campo-grande-ms,MS,5.99,3.85,4.60,25.50,180
+Cuiabá,cuiaba-mt,MT,6.05,3.90,4.65,27.00,195
+Florianópolis,florianopolis-sc,SC,6.12,4.15,4.78,28.00,160
+Joinville,joinville-sc,SC,6.05,4.05,4.70,25.50,170
+Londrina,londrina-pr,PR,5.92,3.85,4.45,24.50,170
+Maringá,maringa-pr,PR,5.95,3.88,4.48,25.00,175
+Caxias do Sul,caxias-do-sul-rs,RS,6.15,4.10,4.80,25.00,165
+Canoas,canoas-rs,RS,6.09,4.02,4.72,26.00,175
+João Pessoa,joao-pessoa-pb,PB,5.89,3.99,4.39,24.00,165
+Natal,natal-rn,RN,5.95,4.05,4.49,24.50,170
+Maceió,maceio-al,AL,6.02,4.10,4.55,24.00,160
+Aracaju,aracaju-se,SE,5.98,4.02,4.45,23.50,165
+Teresina,teresina-pi,PI,6.08,4.18,4.62,24.00,175
+São Luís,sao-luis-ma,MA,6.12,4.22,4.68,24.50,170
+Belém,belem-pa,PA,6.25,4.29,4.85,25.50,175
+Anápolis,anapolis-go,GO,5.88,3.72,4.53,24.50,180
+Piracicaba,piracicaba-sp,SP,5.80,3.76,4.33,26.00,170
+Bauru,bauru-sp,SP,5.83,3.77,4.35,25.50,175
