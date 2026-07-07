@@ -6,6 +6,7 @@ import { X, Plus, Minus, Camera, Save, Loader2, DollarSign, Tag, Calendar, FileT
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { createTransactionClient } from '@/lib/api-client';
 
 const transactionSchema = z.object({
   amount: z.string().min(1, 'Informe o valor'),
@@ -33,7 +34,8 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, userId }:
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
-      type: 'gasto',
+      type: 'ganho',
+      category: 'Corrida',
       date: new Date().toISOString().split('T')[0],
       is_work: true,
     }
@@ -49,8 +51,13 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, userId }:
     }
   };
 
-  const onSubmit = async (data: TransactionFormValues) => {
+  const handleSave = async (data: TransactionFormValues) => {
+    if (!userId) {
+      alert('Usuário não identificado.');
+      return;
+    }
     setLoading(true);
+
     try {
       // Parse amount: accept both ',' and '.'
       const rawAmount = data.amount.replace(/\./g, '').replace(',', '.');
@@ -67,18 +74,7 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, userId }:
         user_id: userId,
       };
 
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao salvar transação');
-      }
+      await createTransactionClient(payload);
 
       reset();
       setFile(null);

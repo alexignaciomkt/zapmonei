@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { createClient } from '@/lib/supabase';
+import { loginClient } from '@/lib/api-client';
 import { Phone, Lock, ChevronRight, Loader2, AlertCircle, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 // ── Phone mask helper ──
@@ -22,7 +22,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
 
   const handlePhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(formatPhone(e.target.value));
@@ -41,24 +40,9 @@ export default function LoginPage() {
       return;
     }
 
-    const virtualEmail = `${cleanPhone}@zapmonei.com.br`;
-
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: virtualEmail,
-        password,
-      });
-
-      if (authError) {
-        if (authError.message.includes('Invalid login credentials')) {
-          throw new Error('Número ou senha incorretos. Verifique e tente novamente.');
-        }
-        throw authError;
-      }
-
-      if (data.user) {
-        router.push('/dashboard');
-      }
+      await loginClient(cleanPhone, password);
+      router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Erro ao realizar login. Verifique suas credenciais.');

@@ -9,7 +9,7 @@ import {
   RefreshCw, Loader2, BarChart2, Wallet, LogOut
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, PieChart, Pie, Cell } from 'recharts';
-import { createClient } from '@/lib/supabase';
+import { fetchTransactionsClient, removeClientToken, getClientToken } from '@/lib/api-client';
 import TransactionModal from '@/components/TransactionModal';
 import { useRouter } from 'next/navigation';
 
@@ -48,7 +48,6 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const supabase = createClient();
 
   const [userProfile, setUserProfile] = useState<{ id: string; nome: string } | null>(null);
   const router = useRouter();
@@ -56,36 +55,31 @@ export default function Dashboard() {
   const fetchTransactions = async (userId: string, silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
-    const { data } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('ocorrencia_em', { ascending: false })
-      .limit(50);
-    setTransactions((data as Transaction[]) || []);
-    setLoading(false);
-    setRefreshing(false);
+    try {
+      const data = await fetchTransactionsClient(userId);
+      setTransactions(data);
+    } catch (err) {
+      console.error('Error fetching transactions:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
   const initData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push('/login'); return; }
+    const token = getClientToken();
+    if (!token) {
+      router.push('/login');
+      return;
+    }
 
-    // Busca perfil na tabela users
-    const { data: profile } = await supabase
-      .from('users')
-      .select('id, nome')
-      .eq('auth_user_id', user.id)
-      .maybeSingle();
-
-    if (profile) {
-      setUserProfile(profile);
-      fetchTransactions(profile.id);
+    const savedUser = localStorage.getItem('zap_user');
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      setUserProfile({ id: parsed.id, nome: parsed.nome || 'Motorista' });
+      fetchTransactions(parsed.id);
     } else {
-      // Busca o nome nos metadados do Auth (salvo pela Kathy)
-      const fullName = user.user_metadata?.full_name || 'Motorista';
-      setUserProfile({ id: '', nome: fullName });
-      fetchTransactions('');
+      router.push('/login');
     }
   };
 
@@ -94,7 +88,8 @@ export default function Dashboard() {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    removeClientToken();
+    localStorage.removeItem('zap_user');
     router.push('/login');
   };
 
