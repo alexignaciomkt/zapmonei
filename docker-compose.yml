@@ -34,6 +34,12 @@ services:
       placement:
         constraints:
           - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.zapmonei-api.rule=Host(`api.zapmonei.com.br`)"
+        - "traefik.http.routers.zapmonei-api.entrypoints=websecure"
+        - "traefik.http.routers.zapmonei-api.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.zapmonei-api.loadbalancer.server.port=3000"
     environment:
       - PORT=3000
       - NODE_ENV=production
