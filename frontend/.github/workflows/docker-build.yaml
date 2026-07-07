@@ -19,29 +19,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Verificar presença de Secrets do Supabase
-        run: |
-          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]; then
-            echo "ERROR: NEXT_PUBLIC_SUPABASE_URL não está definido"
-            exit 1
-          else
-            echo "OK: NEXT_PUBLIC_SUPABASE_URL está definido"
-          fi
-          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]; then
-            echo "ERROR: NEXT_PUBLIC_SUPABASE_ANON_KEY não está definido"
-            exit 1
-          else
-            echo "OK: NEXT_PUBLIC_SUPABASE_ANON_KEY está definido"
-          fi    
-
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          # Aqui ele vai criar a imagem no seu Docker Hub
-          tags: alexignacio/zapmonei-frontend:latest
-          # Passando as chaves do Supabase para o build
-          build-args: |
-            NEXT_PUBLIC_SUPABASE_URL=https://ugwsiqhzmvtdkdlrthek.supabase.co
-            NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnd3NpcWh6bXZ0ZGtkbHJ0aGVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMjE1NjMsImV4cCI6MjA5Mjc5NzU2M30.girn8WPgH61d4onBiY4pgN73Wd1okz6bgBwYmoFHU9Y
+          tags: a2system/zapmonei-frontend:latest
