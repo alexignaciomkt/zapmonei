@@ -17,6 +17,7 @@ services:
         - "traefik.http.routers.zapmonei.rule=Host(`app.zapmonei.com.br`)"
         - "traefik.http.routers.zapmonei.entrypoints=websecure"
         - "traefik.http.routers.zapmonei.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.zapmonei.priority=1"
         - "traefik.http.services.zapmonei.loadbalancer.server.port=3000"
 
   # ── BACKEND (Express API V2) ──
@@ -39,6 +40,7 @@ services:
         - "traefik.http.routers.zapmonei-api.rule=Host(`app.zapmonei.com.br`) && (PathPrefix(`/api/v1`) || PathPrefix(`/health`))"
         - "traefik.http.routers.zapmonei-api.entrypoints=websecure"
         - "traefik.http.routers.zapmonei-api.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.zapmonei-api.priority=100"
         - "traefik.http.services.zapmonei-api.loadbalancer.server.port=3000"
     environment:
       - PORT=3000
