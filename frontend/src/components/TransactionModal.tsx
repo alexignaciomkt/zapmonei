@@ -51,7 +51,7 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, userId }:
     }
   };
 
-  const handleSave = async (data: TransactionFormValues) => {
+  const onSubmit = async (data: TransactionFormValues) => {
     if (!userId) {
       alert('Usuário não identificado.');
       return;
