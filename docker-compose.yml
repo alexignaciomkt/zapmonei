@@ -37,6 +37,7 @@ services:
           - node.role == manager
       labels:
         - "traefik.enable=true"
+        - "traefik.docker.network=automacoes"
         - "traefik.http.routers.zapmonei-api.rule=Host(`app.zapmonei.com.br`) && PathPrefix(`/api/v1`)"
         - "traefik.http.routers.zapmonei-api.entrypoints=websecure"
         - "traefik.http.routers.zapmonei-api.tls.certresolver=letsencryptresolver"

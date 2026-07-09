@@ -10,6 +10,7 @@ const router = Router();
 
 router.get('/', getRoot);
 router.get('/health', getHealth);
+router.get('/api/v1/health', getHealth);
 
 // Vincula os domínios da API
 router.use('/api/v1/auth', authRouter);
