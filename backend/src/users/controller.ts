@@ -327,13 +327,20 @@ export const updateUser = async (req: Request, res: Response) => {
 // 5. Atualizar Status de Onboarding (PATCH /api/v1/users/:id/status)
 export const updateUserStatus = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { onboarding_status } = req.body;
+  const { onboarding_status, onboarding_step } = req.body;
 
   const validStatuses = Object.values(ONBOARDING) as string[];
   if (!onboarding_status || !validStatuses.includes(onboarding_status)) {
     return res.status(400).json({
       success: false,
       error: { code: 'INVALID_STATUS', message: 'Status de onboarding inválido.' }
+    });
+  }
+
+  if (onboarding_step !== undefined && (typeof onboarding_step !== 'number' || !Number.isInteger(onboarding_step))) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_ONBOARDING_STEP', message: 'onboarding_step deve ser um número inteiro.' }
     });
   }
 
@@ -352,11 +359,12 @@ export const updateUserStatus = async (req: Request, res: Response) => {
     const user = await prisma.user.update({
       where: { id },
       data: {
-        onboardingStatus: onboarding_status
+        onboardingStatus: onboarding_status,
+        onboardingStep: onboarding_step !== undefined ? onboarding_step : undefined
       }
     });
 
-    logger.info(`User onboarding status updated via PATCH: ${user.id} -> ${onboarding_status}`);
+    logger.info(`User onboarding status updated via PATCH: ${user.id} -> ${onboarding_status} (step: ${user.onboardingStep})`);
 
     return res.status(200).json({
       success: true,
