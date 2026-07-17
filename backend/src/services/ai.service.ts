@@ -12,9 +12,9 @@ export interface AIResponse {
 
 export class AIService {
   private static getApiKey(): string {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GEMINI_API_KEY;
     if (!key) {
-      logger.error('GEMINI_API_KEY is not defined in environment variables.');
+      logger.error('Neither GEMINI_API_KEY nor GOOGLE_GEMINI_API_KEY is defined in environment variables.');
       throw new Error('Chave de API do Gemini não configurada.');
     }
     return key;
