@@ -7,7 +7,6 @@ export class OnboardingService {
    * Processa a mensagem do usuário no fluxo de onboarding
    */
   public static async processMessage(whatsappNumber: string, messageContent: string): Promise<string> {
-    // 1. Busca o usuário pelo número de WhatsApp
     const user = await prisma.user.findUnique({
       where: { whatsappNumber }
     });
@@ -20,25 +19,43 @@ export class OnboardingService {
     logger.info(`Processing onboarding message for user ${user.id} at step ${step}`);
 
     if (step === 0) {
-      return await this.handleStep0(user.id, messageContent);
+      return await this.handleStep0(user.id);
+    } else if (step === 1) {
+      return await this.handleStep1(user.id, messageContent);
     } else if (step === 2) {
       return await this.handleStep2(user.id, messageContent);
     } else if (step === 3) {
       return await this.handleStep3(user.id, messageContent);
     } else {
-      // Caso de segurança: usuário já ativo ou em estado inconsistente
       return 'Seu onboarding já está completo, parceiro! Se precisar de ajuda, é só me mandar os gastos ou corridas do dia. 🚀';
     }
   }
 
   /**
-   * Passo 0: Nome do Co-piloto
+   * Passo 0: Primeiro "Olá" (Apresentação e pergunta do nome do Co-piloto)
    */
-  private static async handleStep0(userId: string, messageContent: string): Promise<string> {
+  private static async handleStep0(userId: string): Promise<string> {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        onboardingStep: 1
+      }
+    });
+
+    return `Fala, parceiro! Daqui para frente, eu sou o seu Co-piloto Inteligente 🤖. O meu único objetivo é te ajudar a ver a cor do dinheiro no fim do dia e fazer seu lucro sobrar de verdade no bolso.\n\nPara a gente começar com o pé no acelerador, me conta: **como você quer que eu seja chamado?**\n\n*(Pode ser Alfred, Meu Sócio, Contador... ou qualquer outro nome que você preferir! Se quiser, pode mandar um áudio 🎙️)*`;
+  }
+
+  /**
+   * Passo 1: Batismo do Co-piloto
+   */
+  private static async handleStep1(userId: string, messageContent: string): Promise<string> {
+    // Sanitização contra caracteres indesejados vindos de expressões mal formadas (ex: "=" ou no início)
+    let rawContent = messageContent.trim().replace(/^[\s=]+/, '');
+
     const systemInstruction = `
       Você é um assistente linguístico. Sua tarefa é analisar o nome sugerido pelo usuário para o seu Co-piloto inteligente.
       Você deve:
-      1. Limpar o nome de qualquer pontuação final (como vírgulas, pontos ou exclamações) e espaços desnecessários.
+      1. Limpar o nome de qualquer pontuação final (como vírgulas, pontos ou exclamações), aspas e espaços desnecessários.
       2. Identificar se o nome é predominantemente Masculino ("M") ou Feminino ("F") para usarmos o artigo correto em português.
       3. Determinar o artigo definido correspondente ("o" para masculino, "a" para feminino).
       Retorne estritamente um JSON no schema solicitado.
@@ -54,9 +71,9 @@ export class OnboardingService {
       required: ['cleanedName', 'gender', 'article']
     };
 
-    const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
+    const aiRes = await AIService.executeStructuredTask(systemInstruction, rawContent, jsonSchema);
 
-    let copilotName = messageContent.trim().replace(/[\s,\.\?!]+$/, '');
+    let copilotName = rawContent.replace(/[\s,\.\?!]+$/, '');
     let article = 'o';
 
     if (aiRes.success && aiRes.data?.cleanedName) {
@@ -64,7 +81,6 @@ export class OnboardingService {
       article = aiRes.data.article;
     }
 
-    // Avança para o Step 2 (o Step 1 era a espera antiga, agora vamos direto ao 2)
     await prisma.user.update({
       where: { id: userId },
       data: {
