@@ -15,6 +15,9 @@ export interface UserDTO {
   work_regime?: string | null;
   financial_goal?: string | null;
   vehicle_info?: string | null;
+  control_scope?: string | null;
+  platforms?: string | null;
+  daily_goal?: number | null;
 }
 
 /**
@@ -36,6 +39,9 @@ export function toUserDTO(user: User): UserDTO {
     copilot_name: user.copilotName,
     work_regime: user.workRegime,
     financial_goal: user.financialGoal,
-    vehicle_info: user.vehicleInfo
+    vehicle_info: user.vehicleInfo,
+    control_scope: user.controlScope,
+    platforms: user.platforms,
+    daily_goal: user.dailyGoal ? Number(user.dailyGoal) : null
   };
 }

@@ -168,7 +168,7 @@ export const getUserByPhone = async (req: Request, res: Response) => {
 // 4. Atualizar Dados do Usuário (PATCH /api/v1/users/:id)
 export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, email, plan, whatsapp_instance_name, whatsapp_instance_token, onboarding_step, onboarding_status, whatsapp_support_number, tutorial_visto, password, copilot_name, work_regime, financial_goal, vehicle_info } = req.body;
+  const { name, email, plan, whatsapp_instance_name, whatsapp_instance_token, onboarding_step, onboarding_status, whatsapp_support_number, tutorial_visto, password, copilot_name, work_regime, financial_goal, vehicle_info, control_scope, platforms, daily_goal } = req.body;
 
   if (name !== undefined && (typeof name !== 'string' || !name.trim())) {
     return res.status(400).json({
@@ -271,6 +271,27 @@ export const updateUser = async (req: Request, res: Response) => {
     });
   }
 
+  if (control_scope !== undefined && control_scope !== null && typeof control_scope !== 'string') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_CONTROL_SCOPE', message: 'control_scope deve ser uma string ou null.' }
+    });
+  }
+
+  if (platforms !== undefined && platforms !== null && typeof platforms !== 'string') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_PLATFORMS', message: 'platforms deve ser uma string ou null.' }
+    });
+  }
+
+  if (daily_goal !== undefined && daily_goal !== null && typeof daily_goal !== 'number') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_DAILY_GOAL', message: 'daily_goal deve ser um número ou null.' }
+    });
+  }
+
   try {
     const existingUser = await prisma.user.findUnique({
       where: { id }
@@ -304,7 +325,10 @@ export const updateUser = async (req: Request, res: Response) => {
         copilotName: copilot_name !== undefined ? copilot_name : undefined,
         workRegime: work_regime !== undefined ? work_regime : undefined,
         financialGoal: financial_goal !== undefined ? financial_goal : undefined,
-        vehicleInfo: vehicle_info !== undefined ? vehicle_info : undefined
+        vehicleInfo: vehicle_info !== undefined ? vehicle_info : undefined,
+        controlScope: control_scope !== undefined ? control_scope : undefined,
+        platforms: platforms !== undefined ? platforms : undefined,
+        dailyGoal: daily_goal !== undefined ? daily_goal : undefined
       }
     });
 

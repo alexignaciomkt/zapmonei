@@ -29,6 +29,9 @@ model User {
   workRegime             String?       @map("work_regime")
   financialGoal          String?       @map("financial_goal")
   vehicleInfo            String?       @map("vehicle_info")
+  controlScope           String?       @map("control_scope")
+  platforms              String?       @map("platforms")
+  dailyGoal              Decimal?      @map("daily_goal") @db.Decimal(12, 2)
   createdAt              DateTime      @default(now()) @map("created_at")
   updatedAt              DateTime      @updatedAt @map("updated_at")
   transactions           Transaction[]
