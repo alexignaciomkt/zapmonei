@@ -17,9 +17,11 @@ export const handleOnboardingMessage = async (req: Request, res: Response) => {
     let phone = whatsapp_number;
 
     let user = null;
-    if (user_id) {
+    if (user_id && user_id !== 'undefined' && user_id !== '') {
       user = await prisma.user.findUnique({ where: { id: user_id } });
-    } else if (phone) {
+    }
+    
+    if (!user && phone) {
       user = await prisma.user.findUnique({ where: { whatsappNumber: phone } });
     }
 
