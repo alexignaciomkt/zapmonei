@@ -44,6 +44,18 @@ export class OnboardingService {
   }
 
   private static async checkYesOrNo(messageContent: string): Promise<boolean> {
+    const clean = messageContent.toLowerCase().trim().replace(/[\.\!\?,]/g, '');
+    
+    // Prioridade máxima e determinística para opções numéricas 1 e 2
+    if (clean === '1' || clean.startsWith('1 ') || clean.includes('opcao 1') || clean.includes('opção 1')) {
+      logger.info(`checkYesOrNo: matched numeric option 1`);
+      return true;
+    }
+    if (clean === '2' || clean.startsWith('2 ') || clean.includes('opcao 2') || clean.includes('opção 2')) {
+      logger.info(`checkYesOrNo: matched numeric option 2`);
+      return false;
+    }
+
     const systemInstruction = `
       Você é um classificador linguístico de respostas curtas do Brasil de norte a sul.
       Sua tarefa é analisar a resposta do usuário a uma pergunta de confirmação (ex: "É isso mesmo, anotei correto?") e decidir se ele está confirmando (concordando/validando) ou negando/corrigindo.
@@ -81,7 +93,6 @@ export class OnboardingService {
     }
     
     // Fallback local robusto se a API falhar (cobre as principais gírias e palavras curtas da lista)
-    const clean = messageContent.toLowerCase().trim().replace(/[\.\!\?,]/g, '');
     const afirmativas = [
       'sim', 's', 'isso', 'exato', 'ok', 'correto', 'perfeito', 
       'fechado', 'beleza', 'show', 'valeu', 'exatamente', 
@@ -223,7 +234,7 @@ export class OnboardingService {
       escopoTexto = 'de tudo (app e casa)';
     }
 
-    return `Maravilha, parceiro! Entendi que você roda *${regimeTexto}* e quer que eu cuide *${escopoTexto}*. É isso mesmo, anotei corretamente?`;
+    return `Maravilha, parceiro! Entendi que você roda *${regimeTexto}* e quer que eu cuide *${escopoTexto}*.\n\nComo o nosso Brasil é enorme e às vezes posso me confundir com alguma gíria, me responde com o número:\n\n**1** - Tá certo sua anotação 👍\n**2** - Não, precisamos corrigir 👎`;
   }
 
   // ────────────────────────────────────────────────────
@@ -298,16 +309,12 @@ export class OnboardingService {
     const copilotName = user?.copilotName || 'Co-piloto';
 
     const systemInstruction = `
-      Você é o ${copilotName}, um Co-piloto Inteligente para motoristas de app no Brasil. Analise a resposta do motorista e extraia os valores de meta financeira:
+      Você é um motor de extração de dados em JSON. Analise a resposta do motorista e extraia os valores de meta financeira:
 
       1. monthly_goal: Meta mensal desejada pelo usuário (apenas o número decimal). Se não mencionou ou ficou confuso, responda 5000.00.
       2. daily_goal: Meta diária desejada pelo usuário (apenas o número decimal). Se não mencionou ou ficou confuso, responda 200.00.
 
-      3. feedback_confirmacao: Crie uma frase curta, calorosa e descontraída em português confirmando as metas.
-         Termine SEMPRE com uma pergunta de validação: "É isso mesmo, anotei corretamente?" ou similar.
-         - Exemplo: "Meta de gigante! Anotei aqui: R$ 5.000 sobrando no bolso por mês, e R$ 200 na tela por dia. É isso mesmo, anotei certinho? 🎯"
-
-      IMPORTANTE: Seja generoso.
+      IMPORTANTE: Seja generoso. "uns 5k" = 5000. "200 conto" = 200.
       Retorne estritamente o JSON solicitado.
     `;
 
@@ -315,32 +322,34 @@ export class OnboardingService {
       type: 'OBJECT',
       properties: {
         monthly_goal: { type: 'NUMBER' },
-        daily_goal: { type: 'NUMBER' },
-        feedback_confirmacao: { type: 'STRING' }
+        daily_goal: { type: 'NUMBER' }
       },
-      required: ['monthly_goal', 'daily_goal', 'feedback_confirmacao']
+      required: ['monthly_goal', 'daily_goal']
     };
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
 
-    const updateData: any = {
-      onboardingStep: 41 // Vai para confirmação de metas
-    };
-
-    let feedbackConfirmacao = '';
+    let monthlyGoal = 5000.00;
+    let dailyGoal = 200.00;
 
     if (aiRes.success && aiRes.data) {
-      updateData.monthlyGoal = aiRes.data.monthly_goal;
-      updateData.dailyGoal = aiRes.data.daily_goal;
-      feedbackConfirmacao = aiRes.data.feedback_confirmacao;
-    } else {
-      updateData.monthlyGoal = 5000.00;
-      updateData.dailyGoal = 200.00;
-      feedbackConfirmacao = `Deixei anotado nossa meta de R$ 5.000 por mês e R$ 200 por dia pra fazer o dia valer a pena. É isso mesmo, anotei corretamente? 🎯`;
+      monthlyGoal = aiRes.data.monthly_goal || 5000.00;
+      dailyGoal = aiRes.data.daily_goal || 200.00;
     }
 
-    await prisma.user.update({ where: { id: userId }, data: updateData });
-    return feedbackConfirmacao;
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        monthlyGoal,
+        dailyGoal,
+        onboardingStep: 41 // Vai para confirmação de metas
+      }
+    });
+
+    const monthlyFormatted = monthlyGoal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const dailyFormatted = dailyGoal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    return `Meta de gigante! Deixei anotado aqui:\n💰 **${monthlyFormatted}** sobrando no bolso por mês\n💵 **${dailyFormatted}** na tela por dia pra fazer valer a pena.\n\nComo o nosso Brasil é enorme e às vezes posso me confundir com alguma gíria, me responde com o número:\n\n**1** - Tá certo sua anotação 👍\n**2** - Não, precisamos corrigir 👎`;
   }
 
   // ────────────────────────────────────────────────────
@@ -372,14 +381,12 @@ export class OnboardingService {
     const copilotName = user?.copilotName || 'Co-piloto';
 
     const systemInstruction = `
-      Você é o ${copilotName}, um Co-piloto Inteligente para motoristas de app no Brasil.
+      Você é um motor de extração de dados em JSON.
       O motorista informou o veículo dele. Sua tarefa:
 
       1. is_electric: Identifique se o veículo é elétrico/híbrido (true) ou combustão/gás (false).
       2. vehicle_summary: Uma string curta com marca, modelo e ano formatados. Ex: "Chevrolet Onix 2021"
-      3. feedback_confirmacao: Crie uma mensagem empolgada e calorosa em português.
-         Termine com a pergunta de confirmação: "É esse o seu carro mesmo, anotei correto?" ou similar.
-         - Exemplo: "Baita carro! Um SUV compacto muito confortável. Entendi que é um Chevrolet Tracker 2022. É esse o seu carro mesmo, anotei correto?"
+      3. feedback_humanizado: Uma breve classificação amigável do tipo de carro em português. Ex: "hatch prático", "sedan bem espaçoso", "SUV confortável", "carro de rodagem".
 
       Retorne estritamente o JSON.
     `;
@@ -389,9 +396,9 @@ export class OnboardingService {
       properties: {
         is_electric: { type: 'BOOLEAN' },
         vehicle_summary: { type: 'STRING' },
-        feedback_confirmacao: { type: 'STRING' }
+        feedback_humanizado: { type: 'STRING' }
       },
-      required: ['is_electric', 'vehicle_summary', 'feedback_confirmacao']
+      required: ['is_electric', 'vehicle_summary', 'feedback_humanizado']
     };
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
@@ -400,20 +407,21 @@ export class OnboardingService {
       onboardingStep: 51
     };
 
-    let feedbackConfirmacao = '';
+    let vehicleSummary = messageContent;
+    let feedback = 'Baita escolha para encarar o trecho!';
 
     if (aiRes.success && aiRes.data) {
-      updateData.vehicleInfo = aiRes.data.vehicle_summary;
-      // Guardamos provisoriamente se é elétrico nas metas para uso final
-      updateData.isDriver = !aiRes.data.is_electric; // isDriver falso pode significar elétrico se preferir, ou apenas guardamos a string do veículo
-      feedbackConfirmacao = aiRes.data.feedback_confirmacao;
+      vehicleSummary = aiRes.data.vehicle_summary || messageContent;
+      updateData.vehicleInfo = vehicleSummary;
+      updateData.isDriver = !aiRes.data.is_electric; // Guarda se é elétrico
+      feedback = `Baita escolha! Um ${aiRes.data.feedback_humanizado || 'carro'} excelente para o dia a dia.`;
     } else {
       updateData.vehicleInfo = messageContent;
-      feedbackConfirmacao = `Excelente escolha! Entendi que é um ${messageContent}. É esse mesmo o veículo que vamos usar, anotei correto? 🚗`;
     }
 
     await prisma.user.update({ where: { id: userId }, data: updateData });
-    return feedbackConfirmacao;
+
+    return `${feedback} Entendi que é um *${vehicleSummary}*.\n\nComo o nosso Brasil é enorme e às vezes posso me confundir com alguma gíria, me responde com o número:\n\n**1** - Tá certo sua anotação 👍\n**2** - Não, precisamos corrigir 👎`;
   }
 
   // ────────────────────────────────────────────────────
