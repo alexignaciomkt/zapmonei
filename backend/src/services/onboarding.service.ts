@@ -44,15 +44,19 @@ export class OnboardingService {
   }
 
   private static async checkYesOrNo(messageContent: string): Promise<boolean> {
-    const clean = messageContent.toLowerCase().trim().replace(/[\.\!\?,]/g, '');
+    // Limpa pontuações e o caractere '=' que a Evolution/Kathy às vezes anexa na mensagem
+    const clean = messageContent.toLowerCase().trim().replace(/[\.\!\?\,=]/g, '');
     
+    // Extrai apenas os números da mensagem para checar se digitou 1 ou 2
+    const digitsOnly = clean.replace(/\D/g, '');
+
     // Prioridade máxima e determinística para opções numéricas 1 e 2
-    if (clean === '1' || clean.startsWith('1 ') || clean.includes('opcao 1') || clean.includes('opção 1')) {
-      logger.info(`checkYesOrNo: matched numeric option 1`);
+    if (digitsOnly === '1' || clean === '1' || clean.startsWith('1 ') || clean.includes('opcao 1') || clean.includes('opção 1')) {
+      logger.info(`checkYesOrNo: matched numeric option 1 (clean: "${clean}", digits: "${digitsOnly}")`);
       return true;
     }
-    if (clean === '2' || clean.startsWith('2 ') || clean.includes('opcao 2') || clean.includes('opção 2')) {
-      logger.info(`checkYesOrNo: matched numeric option 2`);
+    if (digitsOnly === '2' || clean === '2' || clean.startsWith('2 ') || clean.includes('opcao 2') || clean.includes('opção 2')) {
+      logger.info(`checkYesOrNo: matched numeric option 2 (clean: "${clean}", digits: "${digitsOnly}")`);
       return false;
     }
 
