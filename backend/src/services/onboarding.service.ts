@@ -161,48 +161,63 @@ export class OnboardingService {
     const copilotName = user?.copilotName || 'Co-piloto';
 
     const systemInstruction = `
-      Você é o ${copilotName}, um Co-piloto Inteligente para motoristas de app no Brasil. Analise a resposta do motorista e tente extrair as seguintes informações:
+      Você é um motor de extração de dados em JSON. Analise o texto do motorista e classifique em:
 
-      1. work_regime: Se ele roda "o dia inteiro" / "tempo integral" / "todo dia" / "trabalho direto" → responda "integral". Se faz como "bico" / "extra" / "horas vagas" / "quando sobra tempo" → responda "bico". Se não mencionou ou ficou confuso, responda "integral".
+      1. work_regime:
+         - Se o texto indicar que trabalha o dia todo, é o emprego principal, direto, tempo integral → "integral".
+         - Se indicar que é extra, bico, horas vagas, apenas nos tempos livres → "bico".
+         - Padrão se não mencionado ou confuso: "integral".
 
-      2. control_scope: Se ele quer controlar "só o app" / "só corridas" / "só carro" → responda "app". Se quer "incluir casa" / "tudo" / "vida financeira toda" / "casa e trabalho" → responda "ambos". Se quer "só casa" / "só pessoal" → responda "casa". Se não mencionou ou ficou confuso, responda "ambos".
+      2. control_scope:
+         - Se indicar "apenas trabalho", "só app", "só o trampo", "só corridas", "só grana do trampo" → "app".
+         - Se indicar "tudo", "casa e trabalho", "vida inteira", "pessoal e profissional" → "ambos".
+         - Se indicar "só casa", "só pessoal", "só contas de casa" → "casa".
+         - Padrão se não mencionado ou confuso: "ambos".
 
-      3. feedback_confirmacao: Crie uma frase curta e descontraída em português, dizendo o que você entendeu de forma natural e amigável. IMPORTANTE: termine a frase com uma pergunta de validação: "É isso mesmo, anotei corretamente?" ou similar.
-         - Exemplo: "Maravilha, parceiro! Entendi que você roda o dia todo e quer que eu cuide de tudo (casa e app). É isso mesmo, anotei corretamente?"
-
-      Seja extremamente tolerante e amigável no tom. Retorne estritamente o JSON solicitado.
+      Retorne estritamente o JSON solicitado.
     `;
 
     const jsonSchema = {
       type: 'OBJECT',
       properties: {
         work_regime: { type: 'STRING', enum: ['integral', 'bico'] },
-        control_scope: { type: 'STRING', enum: ['app', 'casa', 'ambos'] },
-        feedback_confirmacao: { type: 'STRING' }
+        control_scope: { type: 'STRING', enum: ['app', 'casa', 'ambos'] }
       },
-      required: ['work_regime', 'control_scope', 'feedback_confirmacao']
+      required: ['work_regime', 'control_scope']
     };
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
 
-    const updateData: any = {
-      onboardingStep: 21 // Vai para a confirmação
-    };
-
-    let feedbackConfirmacao = '';
+    let workRegime = 'integral';
+    let controlScope = 'ambos';
 
     if (aiRes.success && aiRes.data) {
-      updateData.workRegime = aiRes.data.work_regime;
-      updateData.controlScope = aiRes.data.control_scope;
-      feedbackConfirmacao = aiRes.data.feedback_confirmacao;
-    } else {
-      updateData.workRegime = 'integral';
-      updateData.controlScope = 'ambos';
-      feedbackConfirmacao = 'Maravilha, parceiro! Entendi que você roda o dia todo e quer que eu cuide de tudo, tanto do app quanto da casa. É isso mesmo, anotei corretamente?';
+      workRegime = aiRes.data.work_regime || 'integral';
+      controlScope = aiRes.data.control_scope || 'ambos';
     }
 
-    await prisma.user.update({ where: { id: userId }, data: updateData });
-    return feedbackConfirmacao;
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        workRegime,
+        controlScope,
+        onboardingStep: 21 // Próximo passo é a confirmação
+      }
+    });
+
+    // Montando a frase determinística no código de forma humana e amigável
+    const regimeTexto = workRegime === 'integral' ? 'o dia todo' : 'nas horas vagas (bico)';
+    
+    let escopoTexto = '';
+    if (controlScope === 'app') {
+      escopoTexto = 'só das contas do app (trabalho)';
+    } else if (controlScope === 'casa') {
+      escopoTexto = 'só das contas de casa (pessoal)';
+    } else {
+      escopoTexto = 'de tudo (app e casa)';
+    }
+
+    return `Maravilha, parceiro! Entendi que você roda *${regimeTexto}* e quer que eu cuide *${escopoTexto}*. É isso mesmo, anotei corretamente?`;
   }
 
   // ────────────────────────────────────────────────────
