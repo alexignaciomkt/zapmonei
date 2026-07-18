@@ -45,14 +45,23 @@ export class OnboardingService {
 
   private static async checkYesOrNo(messageContent: string): Promise<boolean> {
     const systemInstruction = `
-      Você é um classificador linguístico brasileiro de respostas curtas.
+      Você é um classificador linguístico de respostas curtas do Brasil de norte a sul.
       Sua tarefa é analisar a resposta do usuário a uma pergunta de confirmação (ex: "É isso mesmo, anotei correto?") e decidir se ele está confirmando (concordando/validando) ou negando/corrigindo.
 
       Retorne true (is_yes = true) se ele concordou ou confirmou.
-      Sinônimos e gírias de confirmação comuns:
-      - "sim", "s", "simm", "com certeza", "isso", "exato", "correto", "pode crer", "demorou", "fechado", "perfeito", "ok", "okey", "beleza", "belesma", "tá certo", "ta certo", "é isso", "é isso mesmo", "exatamente", "pode ser", "valeu", "show", "tranquilo".
+      Reconheça e valide todas as seguintes gírias e expressões regionais de afirmação:
 
-      Retorne false (is_yes = false) se ele negou, disse que está errado, ou está tentando corrigir alguma informação (ex: "não", "n", "tá errado", "na verdade...", "bico não", "muda aí").
+      - Nacionais / Populares: "sim", "s", "simm", "com certeza", "isso", "exato", "correto", "pode crer", "demorou", "fechado", "perfeito", "ok", "okey", "beleza", "belesma", "tá certo", "ta certo", "é isso", "é isso mesmo", "exatamente", "pode ser", "valeu", "show", "tranquilo", "show de bola", "é nois", "e nois", "top", "firmeza", "pode pá", "pode pa", "massa", "suave", "na mosca", "tamo junto", "tmj".
+      - Sudeste: "já é", "ja e", "sem caô", "sem cao", "da hora", "bão demais da conta", "bao demais", "certim".
+      - Nordeste: "apoiado", "apoiadíssimo", "só o miolo", "so o miolo", "brocou", "estourou", "é o freio", "e o freio", "é o bicho", "e o bicho", "massa véi", "massa vei", "arretado".
+      - Sul: "tri", "tri bom", "tri certo", "de fundamento", "capaz", "capaz que sim", "bem capaz", "baita", "bem isso".
+      - Norte / C.Oeste: "pai d'égua", "pai deagua", "maceta", "égua de bom", "egua de bom", "boto fé", "boto fe", "só o ouro", "so o ouro", "rocha".
+      - Internet / Gen-Z: "macetou", "entregou tudo", "hablou", "serviu", "fatos".
+      - Precisão / Outros: "na régua", "nos trinques", "sem tirar nem pô", "matou a pau", "acertou na veia", "na lata", "filé", "tá no grau", "ta no grau".
+      - Clássicos / Nostálgicos: "chuchu beleza", "supimpa", "batuta", "da pontinha", "uma uva", "pimba".
+      - Corporativos: "super alinhado", "deu match", "faz sentido", "é sobre isso".
+
+      Retorne false (is_yes = false) se ele negou, disse que está errado, ou está tentando corrigir alguma informação (ex: "não", "n", "tá errado", "na verdade...", "bico não", "muda aí", "está errado", "errado").
     `;
 
     const jsonSchema = {
@@ -68,14 +77,18 @@ export class OnboardingService {
       return aiRes.data.is_yes === true;
     }
     
-    // Fallback local robusto se a API falhar
+    // Fallback local robusto se a API falhar (cobre as principais gírias e palavras curtas da lista)
     const clean = messageContent.toLowerCase().trim().replace(/[\.\!\?,]/g, '');
     const afirmativas = [
       'sim', 's', 'isso', 'exato', 'ok', 'correto', 'perfeito', 
       'fechado', 'beleza', 'show', 'valeu', 'exatamente', 
-      'e isso', 'e isso mesmo', 'pode ser', 'com certeza', 'tranquilo'
+      'e isso', 'e isso mesmo', 'pode ser', 'com certeza', 'tranquilo',
+      'pode crer', 'demorou', 'e nois', 'top', 'firmeza', 'pode pa',
+      'massa', 'suave', 'na mosca', 'tmj', 'ja e', 'sem cao', 'da hora',
+      'certim', 'so o miolo', 'brocou', 'estourou', 'tri', 'baita',
+      'boto fe', 'so o ouro', 'rocha', 'bem isso', 'exatamente', 'faz sentido'
     ];
-    return afirmativas.some(palavra => clean.includes(palavra)) || clean === 's';
+    return afirmativas.some(palavra => clean === palavra || clean.includes(palavra)) || clean === 's';
   }
 
   // ────────────────────────────────────────────────────
