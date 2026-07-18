@@ -73,7 +73,10 @@ export class OnboardingService {
     };
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
-    if (aiRes.success && aiRes.data) {
+    
+    logger.info(`checkYesOrNo response: success=${aiRes.success}, data=${JSON.stringify(aiRes.data)}`);
+
+    if (aiRes.success && aiRes.data && aiRes.data.is_yes !== undefined) {
       return aiRes.data.is_yes === true;
     }
     
@@ -85,10 +88,13 @@ export class OnboardingService {
       'e isso', 'e isso mesmo', 'pode ser', 'com certeza', 'tranquilo',
       'pode crer', 'demorou', 'e nois', 'top', 'firmeza', 'pode pa',
       'massa', 'suave', 'na mosca', 'tmj', 'ja e', 'sem cao', 'da hora',
-      'certim', 'so o miolo', 'brocou', 'estourou', 'tri', 'baita',
-      'boto fe', 'so o ouro', 'rocha', 'bem isso', 'exatamente', 'faz sentido'
+      'certim', 'certinho', 'certeza', 'so o miolo', 'brocou', 'estourou', 
+      'tri', 'baita', 'boto fe', 'so o ouro', 'rocha', 'bem isso', 'faz sentido'
     ];
-    return afirmativas.some(palavra => clean === palavra || clean.includes(palavra)) || clean === 's';
+    
+    const isAffirmativeLocal = afirmativas.some(palavra => clean === palavra || clean.includes(palavra)) || clean === 's';
+    logger.info(`checkYesOrNo local fallback result for "${clean}": ${isAffirmativeLocal}`);
+    return isAffirmativeLocal;
   }
 
   // ────────────────────────────────────────────────────
