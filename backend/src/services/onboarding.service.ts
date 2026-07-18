@@ -5,7 +5,7 @@ import logger from '../config/logger';
 export class OnboardingService {
   /**
    * Processa a mensagem do usuário no fluxo de onboarding.
-   * Fluxo: Step 0→5 (5 interações do usuário)
+   * Fluxo com etapas de confirmação (Step 0 → 1 → 2 → 21 → 3 → 4 → 41 → 5 → 51 → Finalizado)
    */
   public static async processMessage(whatsappNumber: string, messageContent: string): Promise<string> {
     const user = await prisma.user.findUnique({
@@ -26,15 +26,47 @@ export class OnboardingService {
         return await this.handleStep1(user.id, messageContent);
       case 2:
         return await this.handleStep2(user.id, messageContent);
+      case 21: // Confirmação de Regime/Escopo
+        return await this.handleStep2Confirmation(user.id, messageContent);
       case 3:
         return await this.handleStep3(user.id, messageContent);
       case 4:
         return await this.handleStep4(user.id, messageContent);
+      case 41: // Confirmação das Metas
+        return await this.handleStep41Confirmation(user.id, messageContent);
       case 5:
         return await this.handleStep5(user.id, messageContent);
+      case 51: // Confirmação do Veículo
+        return await this.handleStep5Confirmation(user.id, messageContent);
       default:
         return 'Seu onboarding já está completo, parceiro! Se precisar de ajuda, é só me mandar os gastos ou corridas do dia. 🚀';
     }
+  }
+
+  // Helper para verificar se a resposta é um "Sim"
+  private static async checkYesOrNo(messageContent: string): Promise<boolean> {
+    const systemInstruction = `
+      Analise o texto do usuário e responda rigorosamente com um JSON contendo a propriedade "is_yes" (booleano).
+      Retorne true se o usuário está dizendo "Sim", confirmando algo, concordando, usando sinônimos de confirmação como "isso", "com certeza", "exato", "correto", "pode ser", "é isso", "ok", "beleza".
+      Retorne false se ele está negando ("Não", "tá errado", "não é isso"), corrigindo a informação, ou se a resposta for confusa/negativa.
+    `;
+
+    const jsonSchema = {
+      type: 'OBJECT',
+      properties: {
+        is_yes: { type: 'BOOLEAN' }
+      },
+      required: ['is_yes']
+    };
+
+    const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
+    if (aiRes.success && aiRes.data) {
+      return aiRes.data.is_yes === true;
+    }
+    
+    // Fallback simples local se a IA falhar
+    const clean = messageContent.toLowerCase().trim();
+    return clean.includes('sim') || clean.includes('isso') || clean.includes('exato') || clean.includes('ok') || clean.includes('correto') || clean === 's';
   }
 
   // ────────────────────────────────────────────────────
@@ -56,11 +88,13 @@ export class OnboardingService {
     const rawContent = messageContent.trim().replace(/^[\s=]+/, '');
 
     const systemInstruction = `
-      Você é um assistente linguístico. Sua tarefa é analisar o nome sugerido pelo usuário para o seu Co-piloto inteligente.
-      Você deve:
-      1. Limpar o nome de qualquer pontuação final (como vírgulas, pontos ou exclamações), aspas e espaços desnecessários.
-      2. Identificar se o nome é predominantemente Masculino ("M") ou Feminino ("F") para usarmos o artigo correto em português.
-      3. Determinar o artigo definido correspondente ("o" para masculino, "a" para feminino).
+      Você é um assistente linguístico de elite. Sua tarefa é analisar o nome sugerido pelo usuário para o seu Co-piloto inteligente.
+      Você deve identificar se o nome é predominantemente Masculino ("M") ou Feminino ("F") para usarmos o artigo correto em português ("o" para masculino, "a" para feminino).
+
+      ATENÇÃO: Muitos nomes femininos comuns no Brasil não terminam com "a".
+      Exemplos femininos: Stephanie, Kathelyn, Carol, Joyce, Mary, Nicole, Kelly, Ketlin, Evelyn, Miriam.
+      Exemplos masculinos: Alfred, Gabriel, Davi, Samuel, Igor, Felipe, Yuri.
+
       Retorne estritamente um JSON no schema solicitado.
     `;
 
@@ -79,9 +113,11 @@ export class OnboardingService {
     let copilotName = rawContent.replace(/[\s,\.?!]+$/, '');
     let article = 'o';
 
-    if (aiRes.success && aiRes.data?.cleanedName) {
-      copilotName = aiRes.data.cleanedName;
-      article = aiRes.data.article || 'o';
+    if (aiRes.success && aiRes.data) {
+      copilotName = aiRes.data.cleanedName || copilotName;
+      article = aiRes.data.article || this.getArticle(copilotName);
+    } else {
+      article = this.getArticle(copilotName);
     }
 
     await prisma.user.update({
@@ -96,69 +132,77 @@ export class OnboardingService {
   }
 
   // ────────────────────────────────────────────────────
-  // Step 2: Recebe Regime/Escopo + Pergunta Plataformas
+  // Step 2: Recebe Regime/Escopo -> Pergunta confirmação
   // ────────────────────────────────────────────────────
   private static async handleStep2(userId: string, messageContent: string): Promise<string> {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const copilotName = user?.copilotName || 'Co-piloto';
 
     const systemInstruction = `
-      Você é o ${copilotName}, um Co-piloto Inteligente para motoristas de app. Analise a resposta do motorista e extraia:
+      Você é o ${copilotName}, um Co-piloto Inteligente para motoristas de app no Brasil. Analise a resposta do motorista e tente extrair as seguintes informações:
 
-      1. work_regime: Se ele roda "o dia inteiro" / "tempo integral" → responda "integral". Se faz como "bico" / "extra" / "horas vagas" → responda "bico". Se não mencionou, responda null.
+      1. work_regime: Se ele roda "o dia inteiro" / "tempo integral" / "todo dia" / "trabalho direto" → responda "integral". Se faz como "bico" / "extra" / "horas vagas" / "quando sobra tempo" → responda "bico". Se não mencionou ou ficou confuso, responda "integral".
 
-      2. control_scope: Se ele quer controlar "só o app" / "só corridas" → responda "app". Se quer "incluir casa" / "tudo" / "vida financeira toda" → responda "ambos". Se quer "só casa" / "só pessoal" → responda "casa". Se não mencionou, responda null.
+      2. control_scope: Se ele quer controlar "só o app" / "só corridas" / "só carro" → responda "app". Se quer "incluir casa" / "tudo" / "vida financeira toda" / "casa e trabalho" → responda "ambos". Se quer "só casa" / "só pessoal" → responda "casa". Se não mencionou ou ficou confuso, responda "ambos".
 
-      3. missing_fields: Liste os campos que NÃO foram respondidos (array de strings: "work_regime" e/ou "control_scope"). Se ambos foram respondidos, retorne array vazio [].
+      3. feedback_confirmacao: Crie uma frase curta e descontraída em português, dizendo o que você entendeu de forma natural e amigável. IMPORTANTE: termine a frase com uma pergunta de validação: "É isso mesmo, anotei corretamente?" ou similar.
+         - Exemplo: "Maravilha, parceiro! Entendi que você roda o dia todo e quer que eu cuide de tudo (casa e app). É isso mesmo, anotei corretamente?"
 
-      4. followup_message: Se missing_fields não está vazio, crie uma mensagem curta, amigável e descontraída pedindo APENAS o que faltou. Use o nome "${copilotName}" para se referir a si mesmo. Se tudo foi respondido, retorne null.
-
-      IMPORTANTE: Seja generoso na interpretação. Se o motorista deu qualquer indicação sobre o tema, considere como respondido.
+      Seja extremamente tolerante e amigável no tom. Retorne estritamente o JSON solicitado.
     `;
 
     const jsonSchema = {
       type: 'OBJECT',
       properties: {
-        work_regime: { type: 'STRING' },
-        control_scope: { type: 'STRING' },
-        missing_fields: { type: 'ARRAY', items: { type: 'STRING' } },
-        followup_message: { type: 'STRING' }
+        work_regime: { type: 'STRING', enum: ['integral', 'bico'] },
+        control_scope: { type: 'STRING', enum: ['app', 'casa', 'ambos'] },
+        feedback_confirmacao: { type: 'STRING' }
       },
-      required: ['missing_fields']
+      required: ['work_regime', 'control_scope', 'feedback_confirmacao']
     };
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
 
-    if (!aiRes.success) {
-      return `Opa, não consegui entender direito! 😅 Me conta de novo: você roda o dia inteiro ou é mais um bico? E quer que eu cuide só do app ou da vida financeira toda?`;
+    const updateData: any = {
+      onboardingStep: 21 // Vai para a confirmação
+    };
+
+    let feedbackConfirmacao = '';
+
+    if (aiRes.success && aiRes.data) {
+      updateData.workRegime = aiRes.data.work_regime;
+      updateData.controlScope = aiRes.data.control_scope;
+      feedbackConfirmacao = aiRes.data.feedback_confirmacao;
+    } else {
+      updateData.workRegime = 'integral';
+      updateData.controlScope = 'ambos';
+      feedbackConfirmacao = 'Maravilha, parceiro! Entendi que você roda o dia todo e quer que eu cuide de tudo, tanto do app quanto da casa. É isso mesmo, anotei corretamente?';
     }
 
-    const data = aiRes.data;
-    const updateData: any = {};
-
-    // Salva progressivamente o que foi extraído
-    if (data.work_regime) {
-      updateData.workRegime = data.work_regime;
-    }
-    if (data.control_scope) {
-      updateData.controlScope = data.control_scope;
-    }
-
-    const missingFields = data.missing_fields || [];
-
-    if (missingFields.length > 0) {
-      // Salva o que conseguiu extrair (parcial)
-      if (Object.keys(updateData).length > 0) {
-        await prisma.user.update({ where: { id: userId }, data: updateData });
-      }
-      return data.followup_message || `Opa parceiro! Me faltou entender uma coisinha. Me conta: ${missingFields.includes('work_regime') ? 'você roda o dia inteiro ou é bico?' : ''} ${missingFields.includes('control_scope') ? 'E quer que eu cuide só do app ou da vida financeira toda?' : ''}`.trim();
-    }
-
-    // Tudo extraído → avança
-    updateData.onboardingStep = 3;
     await prisma.user.update({ where: { id: userId }, data: updateData });
+    return feedbackConfirmacao;
+  }
 
-    return `Show, já anotei tudo aqui! 📝\n\nAgora me fala: **em quais apps você roda?** Uber, 99, iFood, InDrive...? Pode falar todos! 🚗📱`;
+  // ────────────────────────────────────────────────────
+  // Step 21: Processa a confirmação do Regime/Escopo
+  // ────────────────────────────────────────────────────
+  private static async handleStep2Confirmation(userId: string, messageContent: string): Promise<string> {
+    const isConfirmed = await this.checkYesOrNo(messageContent);
+
+    if (isConfirmed) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { onboardingStep: 3 }
+      });
+      return `Show de bola! Confirmado! 🎯\n\nAgora me fala: **em quais apps você roda?** Uber, 99, iFood, InDrive...? Pode falar todos! 🚗📱`;
+    } else {
+      // Se não confirmou, resetamos para o Step 2 e pedimos novamente
+      await prisma.user.update({
+        where: { id: userId },
+        data: { onboardingStep: 2 }
+      });
+      return `Opa, desculpa a falha do seu Co-piloto! 😅 Me explica de novo então:\n\n1️⃣ **Você roda o dia inteiro ou é bico nas horas vagas?**\n\n2️⃣ **Quer que eu cuide só das corridas do app ou da casa toda também?**`;
+    }
   }
 
   // ────────────────────────────────────────────────────
@@ -175,7 +219,7 @@ export class OnboardingService {
       1. platforms: Uma string com os nomes das plataformas separados por vírgula, com a primeira letra maiúscula. Ex: "Uber, 99, iFood". Se ele mencionou apenas uma, retorne apenas ela. Se ele disse algo genérico como "todos" ou "vários", retorne "Uber, 99, iFood, InDrive".
       2. understood: true se conseguiu identificar pelo menos uma plataforma, false se a resposta não faz sentido ou está vazia.
 
-      Seja generoso na interpretação. "Uber" sozinho já basta. "99 e uber" = "Uber, 99".
+      Seja generoso na interpretação.
     `;
 
     const jsonSchema = {
@@ -189,38 +233,39 @@ export class OnboardingService {
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
 
-    if (!aiRes.success || !aiRes.data?.understood) {
-      return `Hmm, não consegui pegar direito 😅 Me fala de novo: em quais apps você roda? Uber, 99, iFood...?`;
-    }
+    // Salvamos e avançamos direto para a pergunta de Metas (plataformas geralmente é bem direta, não precisa de validação de sim/não)
+    const platforms = (aiRes.success && aiRes.data?.understood) ? aiRes.data.platforms : 'Uber, 99';
 
     await prisma.user.update({
       where: { id: userId },
       data: {
-        platforms: aiRes.data.platforms,
+        platforms,
         onboardingStep: 4
       }
     });
 
-    return `Beleza, parceiro! Agora vem a pergunta de ouro 💰\n\n**No final do mês, quanto você quer ter sobrado no bolso?**\n\nE me diz também: **no final de um dia de trabalho, quanto precisa ter na tela do app pra você dizer "poxa, hoje valeu a pena"?**\n\n_(Pode mandar um valor aproximado, sem frescura! Ex: "quero fazer 5 mil no mês e uns 200 por dia")_`;
+    return `Beleza, plataformas anotadas! 📝\n\nAgora vem a pergunta de ouro: **no final do mês, quanto você quer ter sobrado no bolso?**\n\nE no final de um dia de trabalho, **quanto precisa ter na tela do app pra você dizer "hoje valeu a pena"?**\n\n_(Pode mandar os valores aproximados, sem frescura!)_`;
   }
 
   // ────────────────────────────────────────────────────
-  // Step 4: Recebe Metas + Pergunta Veículo
+  // Step 4: Recebe Metas -> Pergunta confirmação
   // ────────────────────────────────────────────────────
   private static async handleStep4(userId: string, messageContent: string): Promise<string> {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const copilotName = user?.copilotName || 'Co-piloto';
 
     const systemInstruction = `
-      Você é o ${copilotName}, um Co-piloto Inteligente. Analise a resposta do motorista e extraia os valores de meta financeira.
+      Você é o ${copilotName}, um Co-piloto Inteligente para motoristas de app no Brasil. Analise a resposta do motorista e extraia os valores de meta financeira:
 
-      Retorne:
-      1. monthly_goal: O valor da meta MENSAL em número decimal (apenas o número, sem R$ ou texto). Ex: se ele disse "5 mil no mês", retorne 5000.00. Se não mencionou meta mensal, retorne null.
-      2. daily_goal: O valor da meta DIÁRIA em número decimal. Ex: se ele disse "200 por dia", retorne 200.00. Se não mencionou meta diária, retorne null.
-      3. missing_fields: Array com os campos não respondidos ("monthly_goal" e/ou "daily_goal"). Se ambos foram respondidos, retorne [].
-      4. followup_message: Se faltou algum campo, crie uma mensagem curta e descontraída pedindo APENAS o que faltou. Lembre-se: linguagem simples, como se tivesse conversando no bar. Use o nome "${copilotName}". Se tudo foi respondido, retorne null.
+      1. monthly_goal: Meta mensal desejada pelo usuário (apenas o número decimal). Se não mencionou ou ficou confuso, responda 5000.00.
+      2. daily_goal: Meta diária desejada pelo usuário (apenas o número decimal). Se não mencionou ou ficou confuso, responda 200.00.
 
-      IMPORTANTE: Seja generoso. "uns 5k" = 5000. "200 conto" = 200. Se ele deu um range como "entre 4 e 5 mil", use o valor do meio (4500).
+      3. feedback_confirmacao: Crie uma frase curta, calorosa e descontraída em português confirmando as metas.
+         Termine SEMPRE com uma pergunta de validação: "É isso mesmo, anotei corretamente?" ou similar.
+         - Exemplo: "Meta de gigante! Anotei aqui: R$ 5.000 sobrando no bolso por mês, e R$ 200 na tela por dia. É isso mesmo, anotei certinho? 🎯"
+
+      IMPORTANTE: Seja generoso.
+      Retorne estritamente o JSON solicitado.
     `;
 
     const jsonSchema = {
@@ -228,70 +273,70 @@ export class OnboardingService {
       properties: {
         monthly_goal: { type: 'NUMBER' },
         daily_goal: { type: 'NUMBER' },
-        missing_fields: { type: 'ARRAY', items: { type: 'STRING' } },
-        followup_message: { type: 'STRING' }
+        feedback_confirmacao: { type: 'STRING' }
       },
-      required: ['missing_fields']
+      required: ['monthly_goal', 'daily_goal', 'feedback_confirmacao']
     };
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
 
-    if (!aiRes.success) {
-      return `Opa, não consegui entender os valores! 😅 Me fala de novo: quanto você quer fazer no mês e quanto por dia? Pode ser um número redondo, sem frescura!`;
+    const updateData: any = {
+      onboardingStep: 41 // Vai para confirmação de metas
+    };
+
+    let feedbackConfirmacao = '';
+
+    if (aiRes.success && aiRes.data) {
+      updateData.monthlyGoal = aiRes.data.monthly_goal;
+      updateData.dailyGoal = aiRes.data.daily_goal;
+      feedbackConfirmacao = aiRes.data.feedback_confirmacao;
+    } else {
+      updateData.monthlyGoal = 5000.00;
+      updateData.dailyGoal = 200.00;
+      feedbackConfirmacao = `Deixei anotado nossa meta de R$ 5.000 por mês e R$ 200 por dia pra fazer o dia valer a pena. É isso mesmo, anotei corretamente? 🎯`;
     }
 
-    const data = aiRes.data;
-    const updateData: any = {};
-
-    if (data.monthly_goal !== null && data.monthly_goal !== undefined) {
-      updateData.monthlyGoal = data.monthly_goal;
-    }
-    if (data.daily_goal !== null && data.daily_goal !== undefined) {
-      updateData.dailyGoal = data.daily_goal;
-    }
-
-    const missingFields = data.missing_fields || [];
-
-    if (missingFields.length > 0) {
-      if (Object.keys(updateData).length > 0) {
-        await prisma.user.update({ where: { id: userId }, data: updateData });
-      }
-      return data.followup_message || `Quase lá! Me fala também: ${missingFields.includes('monthly_goal') ? 'quanto quer ter sobrado no final do mês?' : ''} ${missingFields.includes('daily_goal') ? 'E quanto precisa fazer por dia pra dizer que valeu a pena?' : ''}`.trim();
-    }
-
-    updateData.onboardingStep = 5;
     await prisma.user.update({ where: { id: userId }, data: updateData });
-
-    return `Anotado! 📝 Agora a gente sabe exatamente onde mirar. 🎯\n\nÚltima pergunta: **qual é o carro que a gente vai acelerar junto no trecho?**\n\nMe diz a marca, o modelo e o ano! 🚗\n_(Ex: Chevrolet Onix 2021, BYD Dolphin 2024, Fiat Argo 2020)_`;
+    return feedbackConfirmacao;
   }
 
   // ────────────────────────────────────────────────────
-  // Step 5: Recebe Veículo + Feedback + Finaliza
+  // Step 41: Processa confirmação das metas
+  // ────────────────────────────────────────────────────
+  private static async handleStep41Confirmation(userId: string, messageContent: string): Promise<string> {
+    const isConfirmed = await this.checkYesOrNo(messageContent);
+
+    if (isConfirmed) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { onboardingStep: 5 }
+      });
+      return `Fechado! Metas salvas! 🏁\n\nAgora me conta: **qual é o carro que a gente vai acelerar junto no trecho?** Me diz a marca, o modelo e o ano! 🚗\n_(Ex: Chevrolet Onix 2021, BYD Dolphin 2024)_`;
+    } else {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { onboardingStep: 4 }
+      });
+      return `Tranquilo! Vamos arrumar. Me conta de novo: **quanto você quer ver sobrando no bolso no final do mês? E qual sua meta diária de faturamento?**`;
+    }
+  }
+
+  // ────────────────────────────────────────────────────
+  // Step 5: Recebe Veículo -> Pergunta confirmação
   // ────────────────────────────────────────────────────
   private static async handleStep5(userId: string, messageContent: string): Promise<string> {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const copilotName = user?.copilotName || 'Co-piloto';
-    const article = this.getArticle(copilotName);
 
     const systemInstruction = `
       Você é o ${copilotName}, um Co-piloto Inteligente para motoristas de app no Brasil.
-
       O motorista informou o veículo dele. Sua tarefa:
 
       1. is_electric: Identifique se o veículo é elétrico/híbrido (true) ou combustão/gás (false).
-         - BYD, Tesla, Nissan Leaf, Renault Zoe, JAC E-JS1 → true
-         - Chevrolet, Fiat, Volkswagen, Hyundai HB20, Toyota Corolla (não híbrido) → false
-         - Se for híbrido (como Corolla Hybrid, Prius), considere true.
-
       2. vehicle_summary: Uma string curta com marca, modelo e ano formatados. Ex: "Chevrolet Onix 2021"
-
-      3. feedback: Uma mensagem simpática e calorosa (2-3 frases no máximo) elogiando a escolha do carro.
-         - Classifique o tipo (hatch, sedan, SUV, etc.)
-         - Faça um elogio genuíno sobre o carro
-         - NÃO dê dicas técnicas de consumo ou manutenção (isso virá numa fase futura)
-         - NÃO mencione valores de km/L ou problemas mecânicos
-         - Seja descontraído e positivo, como um amigo empolgado
-         - Exemplo: "Poxa, que top! Um SUV compacto super confortável tanto pra você quanto pro passageiro. Ótima escolha, parceiro!"
+      3. feedback_confirmacao: Crie uma mensagem empolgada e calorosa em português.
+         Termine com a pergunta de confirmação: "É esse o seu carro mesmo, anotei correto?" ou similar.
+         - Exemplo: "Baita carro! Um SUV compacto muito confortável. Entendi que é um Chevrolet Tracker 2022. É esse o seu carro mesmo, anotei correto?"
 
       Retorne estritamente o JSON.
     `;
@@ -301,31 +346,65 @@ export class OnboardingService {
       properties: {
         is_electric: { type: 'BOOLEAN' },
         vehicle_summary: { type: 'STRING' },
-        feedback: { type: 'STRING' }
+        feedback_confirmacao: { type: 'STRING' }
       },
-      required: ['is_electric', 'vehicle_summary', 'feedback']
+      required: ['is_electric', 'vehicle_summary', 'feedback_confirmacao']
     };
 
     const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
 
-    const isElectric = aiRes.data?.is_electric === true;
-    const vehicleSummary = aiRes.data?.vehicle_summary || messageContent;
-    const feedback = aiRes.data?.feedback || `Baita carro! O ${messageContent} vai nos ajudar muito nas corridas!`;
+    const updateData: any = {
+      onboardingStep: 51
+    };
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        vehicleInfo: vehicleSummary,
-        onboardingStep: 6,
-        onboardingStatus: 'active'
-      }
-    });
+    let feedbackConfirmacao = '';
 
-    const exemploGasto = isElectric
-      ? `Quando recarregar: *"35 de energia"*`
-      : `Quando abastecer: *"40 de gasolina"*`;
+    if (aiRes.success && aiRes.data) {
+      updateData.vehicleInfo = aiRes.data.vehicle_summary;
+      // Guardamos provisoriamente se é elétrico nas metas para uso final
+      updateData.isDriver = !aiRes.data.is_electric; // isDriver falso pode significar elétrico se preferir, ou apenas guardamos a string do veículo
+      feedbackConfirmacao = aiRes.data.feedback_confirmacao;
+    } else {
+      updateData.vehicleInfo = messageContent;
+      feedbackConfirmacao = `Excelente escolha! Entendi que é um ${messageContent}. É esse mesmo o veículo que vamos usar, anotei correto? 🚗`;
+    }
 
-    return `Sensacional! Tudo pronto e configurado no nosso painel de controle! 🚀\n\n${feedback}\n\nA partir de agora, ${article} *${copilotName}* tá oficialmente monitorando a sua cabine! 🏁\n\nÉ só me mandar as coisas do dia a dia:\n• Fez uma corrida: *"fiz 80 no Uber"*\n• ${exemploGasto}\n• Teve um gasto: *"almoço 25"*\n\nPode mandar por texto ou áudio, eu me viro! 😉\n\nBora pra cima, parceiro! Desejo uma ótima rodagem e muito lucro pra nós! 🏁💰`;
+    await prisma.user.update({ where: { id: userId }, data: updateData });
+    return feedbackConfirmacao;
+  }
+
+  // ────────────────────────────────────────────────────
+  // Step 51: Processa confirmação do veículo e finaliza
+  // ────────────────────────────────────────────────────
+  private static async handleStep5Confirmation(userId: string, messageContent: string): Promise<string> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const copilotName = user?.copilotName || 'Co-piloto';
+    const article = this.getArticle(copilotName);
+    const isElectric = user?.isDriver === false; // Conforme mapeado provisoriamente no Step 5
+
+    const isConfirmed = await this.checkYesOrNo(messageContent);
+
+    if (isConfirmed) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          onboardingStep: 6,
+          onboardingStatus: 'active'
+        }
+      });
+
+      const exemploGasto = isElectric
+        ? `Quando recarregar: *"35 de energia"*`
+        : `Quando abastecer: *"40 de gasolina"*`;
+
+      return `Sensacional! Tudo pronto e configurado no nosso painel de controle! 🚀\n\nA partir de agora, ${article} *${copilotName}* tá oficialmente monitorando a sua cabine! 🏁\n\nÉ só me mandar as coisas do dia a dia:\n• Fez uma corrida: *"fiz 80 no Uber"*\n• ${exemploGasto}\n• Teve um gasto: *"almoço 25"*\n\nPode mandar por texto ou áudio, eu me viro! 😉\n\nBora pra cima, parceiro! Desejo uma ótima rodagem e muito lucro pra nós! 🏁💰`;
+    } else {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { onboardingStep: 5 }
+      });
+      return `Sem problemas, meu erro! Me diz de novo então: **qual a marca, modelo e ano do seu carro?**`;
+    }
   }
 
   // ────────────────────────────────────────────────────
@@ -333,7 +412,6 @@ export class OnboardingService {
   // ────────────────────────────────────────────────────
   private static getArticle(name: string): string {
     const lowerName = name.toLowerCase().trim();
-    // Nomes terminados em 'a' geralmente são femininos em português
     if (lowerName.endsWith('a') || lowerName.endsWith('ia') || lowerName.endsWith('na')) {
       return 'a';
     }
