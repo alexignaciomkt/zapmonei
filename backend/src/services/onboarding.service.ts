@@ -43,12 +43,16 @@ export class OnboardingService {
     }
   }
 
-  // Helper para verificar se a resposta é um "Sim"
   private static async checkYesOrNo(messageContent: string): Promise<boolean> {
     const systemInstruction = `
-      Analise o texto do usuário e responda rigorosamente com um JSON contendo a propriedade "is_yes" (booleano).
-      Retorne true se o usuário está dizendo "Sim", confirmando algo, concordando, usando sinônimos de confirmação como "isso", "com certeza", "exato", "correto", "pode ser", "é isso", "ok", "beleza".
-      Retorne false se ele está negando ("Não", "tá errado", "não é isso"), corrigindo a informação, ou se a resposta for confusa/negativa.
+      Você é um classificador linguístico brasileiro de respostas curtas.
+      Sua tarefa é analisar a resposta do usuário a uma pergunta de confirmação (ex: "É isso mesmo, anotei correto?") e decidir se ele está confirmando (concordando/validando) ou negando/corrigindo.
+
+      Retorne true (is_yes = true) se ele concordou ou confirmou.
+      Sinônimos e gírias de confirmação comuns:
+      - "sim", "s", "simm", "com certeza", "isso", "exato", "correto", "pode crer", "demorou", "fechado", "perfeito", "ok", "okey", "beleza", "belesma", "tá certo", "ta certo", "é isso", "é isso mesmo", "exatamente", "pode ser", "valeu", "show", "tranquilo".
+
+      Retorne false (is_yes = false) se ele negou, disse que está errado, ou está tentando corrigir alguma informação (ex: "não", "n", "tá errado", "na verdade...", "bico não", "muda aí").
     `;
 
     const jsonSchema = {
@@ -64,9 +68,14 @@ export class OnboardingService {
       return aiRes.data.is_yes === true;
     }
     
-    // Fallback simples local se a IA falhar
-    const clean = messageContent.toLowerCase().trim();
-    return clean.includes('sim') || clean.includes('isso') || clean.includes('exato') || clean.includes('ok') || clean.includes('correto') || clean === 's';
+    // Fallback local robusto se a API falhar
+    const clean = messageContent.toLowerCase().trim().replace(/[\.\!\?,]/g, '');
+    const afirmativas = [
+      'sim', 's', 'isso', 'exato', 'ok', 'correto', 'perfeito', 
+      'fechado', 'beleza', 'show', 'valeu', 'exatamente', 
+      'e isso', 'e isso mesmo', 'pode ser', 'com certeza', 'tranquilo'
+    ];
+    return afirmativas.some(palavra => clean.includes(palavra)) || clean === 's';
   }
 
   // ────────────────────────────────────────────────────
