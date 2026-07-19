@@ -34,6 +34,9 @@ export const handleOnboardingMessage = async (req: Request, res: Response) => {
 
     const replyMessage = await OnboardingService.processMessage(user.whatsappNumber, message_content);
 
+    // Delay de 3 segundos para parecer digitação humana
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     return res.status(200).json({
       success: true,
       reply: replyMessage,

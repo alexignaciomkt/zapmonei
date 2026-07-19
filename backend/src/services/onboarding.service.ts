@@ -232,21 +232,27 @@ export class OnboardingService {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const copilotName = user?.copilotName || 'Co-piloto';
 
-    const systemInstruction = `
-      Analise o texto e extraia o valor numérico da meta financeira mensal desejada em reais.
-      Retorne apenas o número decimal (ex: 5000.00). Se não mencionado ou confuso, retorne 5000.00.
-    `;
+    // Extração robusta por regex antes de apelar para a IA
+    const cleanDigits = messageContent.replace(/[^\d]/g, '');
+    let monthlyGoal = parseFloat(cleanDigits);
 
-    const jsonSchema = {
-      type: 'OBJECT',
-      properties: {
-        monthly_goal: { type: 'NUMBER' }
-      },
-      required: ['monthly_goal']
-    };
+    if (isNaN(monthlyGoal) || monthlyGoal <= 0) {
+      const systemInstruction = `
+        Analise o texto e extraia o valor numérico da meta financeira mensal desejada em reais.
+        Retorne apenas o número decimal (ex: 5000.00). Se não mencionado ou confuso, retorne 5000.00.
+      `;
 
-    const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
-    const monthlyGoal = aiRes.success && aiRes.data?.monthly_goal ? aiRes.data.monthly_goal : 5000.00;
+      const jsonSchema = {
+        type: 'OBJECT',
+        properties: {
+          monthly_goal: { type: 'NUMBER' }
+        },
+        required: ['monthly_goal']
+      };
+
+      const aiRes = await AIService.executeStructuredTask(systemInstruction, messageContent, jsonSchema);
+      monthlyGoal = aiRes.success && aiRes.data?.monthly_goal ? aiRes.data.monthly_goal : 5000.00;
+    }
 
     await prisma.user.update({
       where: { id: userId },
