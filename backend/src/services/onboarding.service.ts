@@ -24,6 +24,8 @@ export class OnboardingService {
         return await this.handleStep0(user.id);
       case 1:
         return await this.handleStep1(user.id, messageContent);
+      case 11: // Confirmação do contrato numérico
+        return await this.handleStep11(user.id, messageContent);
       case 2:
         return await this.handleStep2(user.id, messageContent);
       case 3:
@@ -72,7 +74,7 @@ export class OnboardingService {
   }
 
   // ────────────────────────────────────────────────────
-  // Step 0: Apresentação Geral + Migué do Regionalismo + Pede Nome
+  // Step 0: Apresentação Geral + Pede Nome
   // ────────────────────────────────────────────────────
   private static async handleStep0(userId: string): Promise<string> {
     await prisma.user.update({
@@ -80,11 +82,11 @@ export class OnboardingService {
       data: { onboardingStep: 1 }
     });
 
-    return `Fala, parceiro! 👊 Eu sou o seu Co-piloto Inteligente 🤖\n\nMeu único objetivo é fazer seu lucro sobrar de verdade no bolso no fim do mês! 💰\n\nComo o nosso Brasil é gigante e a gente tem gírias muito diferentes de norte a sul, eu preparei um fluxo bem rapidinho com opções de números para eu não correr o risco de entender nada errado, blz? \n\nAssim, a gente fala a mesma língua e deixa tudo configurado perfeitamente pro seu trampo! 😉\n\nPara começar: **como você quer me chamar?** Pode ser Alfred, Monei, Sofia, Meu Sócio... o nome que preferir! 👇`;
+    return `Fala, parceiro! 👊 Eu sou o seu Co-piloto Inteligente 🤖\n\nMeu único objetivo aqui é simples: te ajudar a ver a cor do dinheiro no fim do dia e fazer seu lucro sobrar de verdade no bolso. 💰\n\nAgora me diz: *como você quer me chamar?* Pode ser qualquer nome — Alfred, Monei, Sofia, Meu Sócio... você que manda! 😄`;
   }
 
   // ────────────────────────────────────────────────────
-  // Step 1: Recebe Nome -> Pergunta 1: Regime (Integral vs Bico)
+  // Step 1: Recebe Nome -> Envia Contrato Numérico
   // ────────────────────────────────────────────────────
   private static async handleStep1(userId: string, messageContent: string): Promise<string> {
     const rawContent = messageContent.trim().replace(/^[\s=]+/, '');
@@ -121,11 +123,23 @@ export class OnboardingService {
       where: { id: userId },
       data: {
         copilotName,
-        onboardingStep: 2
+        onboardingStep: 11
       }
     });
 
-    return `Prazer enorme! Agora eu sou a sua *${copilotName}*! 🤝\n\nBora lá pras perguntinhas. Responda digitando apenas o número:\n\n1️⃣ **Como é a sua rotina de rodagem?**\n\n**1** - Rodo o dia todo (Integral) 🚗\n**2** - É mais um bico nas horas vagas (Bico) ⏱️`;
+    return `Prazer em te conhecer! Agora eu sou ${article} *${copilotName}*! 🤝\n\nA partir de hoje, tô aqui do seu lado na cabine. Agora preciso entender um pouquinho da sua rotina pra te ajudar melhor.\n\nComo o Brasil é enorme e existem diversas formas de falar em cada canto, vamos fazer um acordo? 🤝\n\nPara que eu não me atrapalhe e consiga anotar tudo o que preciso saber de você, responda sempre com o número da opção, beleza?\n\n*1* - Bora, pode começar! 🚀`;
+  }
+
+  // ────────────────────────────────────────────────────
+  // Step 11: Confirmou Contrato -> Pergunta 1: Regime (Integral vs Bico)
+  // ────────────────────────────────────────────────────
+  private static async handleStep11(userId: string, messageContent: string): Promise<string> {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { onboardingStep: 2 }
+    });
+
+    return `Boa! Então bora lá! 🏁\n\n1️⃣ *Como é a sua rotina de rodagem?*\n\n*1* - Rodo o dia todo (Integral) 🚗\n*2* - É mais um bico nas horas vagas (Bico) ⏱️`;
   }
 
   // ────────────────────────────────────────────────────
@@ -208,7 +222,7 @@ export class OnboardingService {
       }
     });
 
-    return `Beleza, plataformas salvas na sua ficha! 📝📱\n\n4️⃣ **No final do mês, quanto de dinheiro você quer ver sobrando livre no seu bolso?**\n_(Me diz um valor aproximado em reais, ex: 5000, 6000...)_ 💰`;
+    return `Beleza, plataformas salvas na sua ficha! 📝📱\n\n4️⃣ *No final do mês, quanto de dinheiro você quer ver sobrando LIVRE no seu bolso?*\n\nLivre = o que sobra depois de pagar combustível, alimentação, manutenção, contas... Tudo descontado!\n\n_(Me diz um valor aproximado em reais, ex: 3000, 5000, 8000...)_ 💰`;
   }
 
   // ────────────────────────────────────────────────────
@@ -276,7 +290,7 @@ export class OnboardingService {
     const monthlyFormatted = monthlyGoalVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const dailyFormatted = dailyGoalVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-    return `Contas feitas aqui, parceiro! 📊\n\nPara fazer sobrar **${monthlyFormatted}** livre no final do mês rodando **${diasRoda} dias** por semana, o seu objetivo diário vai ser fazer em média **${dailyFormatted}** na tela dos aplicativos.\n\nFicou bom assim? Me responde com o número:\n\n**1** - Ficou top, é isso mesmo! 👍\n**2** - Não, quero corrigir os valores 👎`;
+    return `Contas feitas aqui, parceiro! 📊\n\nPara fazer sobrar *${monthlyFormatted}* livre no final do mês rodando *${diasRoda} dias* por semana, o seu objetivo diário vai ser fazer em média *${dailyFormatted}* líquido na pista.\n\nOu seja, a cada dia que você rodar, depois de descontar gasolina, comida e tudo mais, precisa sobrar esse valor no bolso. E eu vou te ajudar a acompanhar isso em tempo real! 📈\n\nFicou bom assim? Me responde com o número:\n\n*1* - Ficou top, é isso mesmo! 👍\n*2* - Não, quero ajustar os valores 👎`;
   }
 
   // ────────────────────────────────────────────────────
@@ -297,7 +311,7 @@ export class OnboardingService {
         where: { id: userId },
         data: { onboardingStep: 5 }
       });
-      return `Sem problemas! Vamos recalcular então. Me conta de novo: **quanto você quer ver sobrando no bolso no final do mês?** 💰`;
+      return `Sem problema nenhum, parceiro! Vamos recalcular. 🔄\n\nMe fala então: *qual o valor livre que você quer no bolso no final do mês?* Pode mandar o número! 💰`;
     }
   }
 
@@ -371,16 +385,16 @@ export class OnboardingService {
       });
 
       const exemploGasto = isElectric
-        ? `Quando recarregar: *"35 de energia"*`
-        : `Quando abastecer: *"40 de gasolina"*`;
+        ? `*"35 de energia"* → desconto do seu lucro`
+        : `*"50 de gasolina"* → desconto do seu lucro`;
 
-      return `Sensacional! Tudo pronto e configurado no nosso painel de controle! 🚀\n\nA partir de agora, ${article} *${copilotName}* tá oficialmente monitorando a sua cabine! 🏁\n\nÉ só me mandar as coisas do dia a dia:\n• Fez uma corrida: *"fiz 80 no Uber"*\n• ${exemploGasto}\n• Teve um gasto: *"almoço 25"*\n\nPode mandar por texto ou áudio, eu me viro! 😉\n\nBora pra cima, parceiro! Desejo uma ótima rodagem e muito lucro pra nós! 🏁💰`;
+      return `Sensacional! Tudo pronto e configurado! 🚀🏁\n\nA partir de agora, ${article} *${copilotName}* tá oficialmente na sua cabine!\n\nMas antes de sair acelerando, deixa eu te contar um segredo: eu não sou Mãe Diná! 🔮😂\n\nEu só consigo te dar números inteligentes se você me alimentar com informação. Quanto mais você me contar, mais esperto eu fico. Olha só o que a gente pode fazer juntos:\n\n📊 *O BÁSICO (já funciona agora!):*\n• Mandou gasto → eu anoto e desconto da sua meta\n• Mandou ganho → eu anoto e somo na sua meta\n• No fim do dia → te mostro seu saldo livre real\n\n💡 *Exemplos do dia a dia:*\n• *"fiz 300 no Uber"* → anoto seu ganho\n• ${exemploGasto}\n• *"almoço 22"* → desconto também\n\n🧠 *QUER FICAR MAIS PRO? Me conta esses detalhes:*\n• *"começando"* ou *"iniciando"* → marco a hora que você ligou o motor\n• *"parando"* ou *"encerrando"* → calculo quanto você fez por hora! ⏱️\n• *"KM início 45.000"* e *"KM final 45.120"* → calculo seu ganho por KM rodado e até quanto tá gastando de combustível! ⛽\n\nResumindo: você é o piloto, eu sou o painel de bordo. 🎛️\nQuanto mais botão você apertar, mais informação eu te dou!\n\nPode mandar por texto ou áudio 🎙️ — eu me viro!\n\nBora pra cima, parceiro! Que essa rodagem dê muito lucro! 🏁💰`;
     } else {
       await prisma.user.update({
         where: { id: userId },
         data: { onboardingStep: 61 } // Volta para a pergunta de veículo
       });
-      return `Sem problemas, meu erro! Me diz de novo então: **qual a marca, modelo e ano do seu carro?**`;
+      return `Tranquilo! Me fala de novo então: *qual a marca, modelo e ano do seu carro?* 🚗`;
     }
   }
 
