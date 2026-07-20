@@ -32,7 +32,8 @@ export const transcribeAudio = async (req: Request, res: Response) => {
     const buffer = Buffer.from(downloadResponse.data);
     const base64Audio = buffer.toString('base64');
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const model = process.env.AI_PRIMARY_MODEL || 'gemini-1.5-flash';
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const requestBody = {
       contents: [
