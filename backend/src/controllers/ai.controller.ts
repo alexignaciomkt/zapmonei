@@ -21,7 +21,9 @@ export const transcribeAudio = async (req: Request, res: Response) => {
     });
   }
 
+  let downloadUrl = '';
   try {
+    downloadUrl = mediaUrl;
     logger.info(`Downloading audio from: ${mediaUrl}`);
     // Baixa o áudio como Buffer
     const downloadResponse = await axios.get(mediaUrl, {
@@ -51,6 +53,7 @@ export const transcribeAudio = async (req: Request, res: Response) => {
     };
 
     logger.info(`Sending audio to Gemini API...`);
+    downloadUrl = 'Gemini API'; // Marcar que falhou no Gemini a partir daqui
     const geminiResponse = await axios.post(geminiUrl, requestBody, {
       headers: {
         'Content-Type': 'application/json'
@@ -66,13 +69,16 @@ export const transcribeAudio = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    logger.error(`Error in transcribeAudio: ${error.message}`);
-    if (error.response?.data) {
-      logger.error(`Error details: ${JSON.stringify(error.response.data)}`);
-    }
+    const errorMsg = error.response?.data
+      ? (typeof error.response.data === 'string' ? error.response.data : JSON.stringify(error.response.data))
+      : error.message;
+    logger.error(`Error in transcribeAudio at [${downloadUrl}]: ${errorMsg}`);
     return res.status(500).json({
       success: false,
-      error: { code: 'TRANSCRIBE_FAILED', message: error.message }
+      error: { 
+        code: 'TRANSCRIBE_FAILED', 
+        message: `Failed at [${downloadUrl}]: ${errorMsg}` 
+      }
     });
   }
 };
