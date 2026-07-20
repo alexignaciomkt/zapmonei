@@ -21,7 +21,7 @@ export class AIService {
   }
 
   private static getModel(): string {
-    return process.env.AI_PRIMARY_MODEL || 'gemini-1.5-flash';
+    return process.env.AI_PRIMARY_MODEL || 'gemini-2.5-flash';
   }
 
   /**
