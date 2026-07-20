@@ -86,12 +86,12 @@ export async function fetchTransactionsClient(userId: string): Promise<Transacti
   // Map backend model DTO structure to frontend expectation
   return (body.data || []).map((t: any) => ({
     id: t.id,
-    tipo: t.tipo,
-    valor: Number(t.valor),
+    tipo: t.type || t.tipo,
+    valor: Number(t.amount !== undefined ? t.amount : t.valor),
     categoria: t.categoria || 'Outros',
-    descricao: t.descricao || '',
+    descricao: t.description || t.descricao || '',
     contexto: t.contexto || '',
-    ocorrencia_em: t.ocorrenciaEm || t.createdAt,
+    ocorrencia_em: t.date || t.ocorrenciaEm || t.createdAt,
   }));
 }
 
